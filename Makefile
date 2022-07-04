@@ -56,3 +56,6 @@ pypi:
 
 run_api:
 	uvicorn api.fast:app --reload  # load web server with code autoreload
+
+run_api_prod:
+	uvicorn api.fast:app --host 0.0.0.0 --port $PORT
