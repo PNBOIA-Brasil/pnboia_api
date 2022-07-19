@@ -18,6 +18,9 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+handler = Mangum(app)
+
+
 @app.get("/v2")
 def index():
     return {"greeting": "Hello world"}
@@ -94,4 +97,3 @@ async def data(info : Request):
     req_info = info
     return GetData().post(table='buoys', data=req_info)
 
-handler = Mangum(app)
