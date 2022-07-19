@@ -6,6 +6,8 @@ import numpy as np
 from pnboia_api.bd import GetData
 from fastapi.responses import JSONResponse
 
+from mangum import Mangum
+
 app = FastAPI()
 
 app.add_middleware(
@@ -91,3 +93,5 @@ async def data(start_date=None,
 async def data(info : Request):
     req_info = info
     return GetData().post(table='buoys', data=req_info)
+
+handler = Mangum(app)

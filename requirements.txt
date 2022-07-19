@@ -10,3 +10,6 @@ twine
 uvicorn
 psycopg2
 flask
+
+
+mangum
