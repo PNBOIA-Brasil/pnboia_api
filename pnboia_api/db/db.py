@@ -65,13 +65,15 @@ class GetData():
 
     return engine
 
-  def create_query(self, query, kwargs):
-    x = 0
+  def create_query(self, wargs):
     for key, value in kwargs.items():
-      if x==0:
-        query += f" WHERE {key}='{value}'"
-        x +=1
+      if type(value[1]) == list:
+        if len(value[1]) == 1:
+          query += f" AND {key} {value[0]} ('{value[1][0]}')"
+        else:
+          query += f" AND {key} {value[0]} {tuple(value[1])}"
       else:
-        query += f" AND {key}='{value}'"
-      
+        query += f" AND {key} {value[0]} '{value[1]}'"
+
     return query
+

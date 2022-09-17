@@ -13,3 +13,4 @@ flask
 
 
 mangum
+pydantic
