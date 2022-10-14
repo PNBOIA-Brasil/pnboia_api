@@ -10,7 +10,7 @@ twine
 uvicorn
 psycopg2
 flask
-
+geoalchemy2
 
 mangum
 pydantic
