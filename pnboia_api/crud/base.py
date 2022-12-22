@@ -24,7 +24,7 @@ class CRUDBase(Generic[ModelType]):
         self.model = model
 
     def show(self, db: Session, id_pk: Any) -> Optional[ModelType]:
-        result = db.query(self.model).filter(self.model.id == id_pk).first()
+        result = db.query(self.model).filter(self.model.buoy_id == id_pk).first()
         if not result:
             raise HTTPException(
                 status_code=404, detail=f"buoy with status {status} not found"
@@ -53,7 +53,7 @@ class CRUDBase(Generic[ModelType]):
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)
 
-        max_id = db.query(func.max(self.model.id)).first()
+        max_id = db.query(func.max(self.model.buoy_id)).first()
 
         db_obj.id = max_id[0] + 1
 

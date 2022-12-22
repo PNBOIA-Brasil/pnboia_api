@@ -1,28 +1,102 @@
 # coding: utf-8
-from sqlalchemy import Column, Computed, Date, DateTime, ForeignKey, Numeric, SmallInteger, String, Text
+from pydantic import BaseModel, HttpUrl, validator, Json
+import datetime
+from typing import Optional, Any, List
+from geojson_pydantic import Feature, Polygon, Point
+
+from geoalchemy2.shape import to_shape 
+from geoalchemy2.elements import WKBElement
+
+from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
 from geoalchemy2.types import Geometry
+
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-metadata = Base.metadata
+class BuoyDriftBase(BaseModel):
+    buoy_id: Optional[int]
+    hull_id: Optional[int]
+    model: Optional[str]
+    latitude_deploy: Optional[float]
+    longitude_deploy: Optional[float]
+    deploy_date: Optional[datetime.date]
+    last_date_time: Optional[datetime.datetime]
+    last_latitude: Optional[float]
+    last_longitude: Optional[float]
+    geom_deploy: Optional[str]
+    geom_last_position: Optional[str]
+    project_id: Optional[int]
 
-class Buoy(Base):
-    __tablename__ = 'buoys'
-    __table_args__ = {'schema': 'drift', 'comment': 'Tabela com as informações de todas as boias de DERIVA do programa PNBOIA/REMOBS.'}
+    @validator('geom_deploy', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-    buoy_id = Column(SmallInteger, primary_key=True, comment='Id da boia.')
-    hull_id = Column(ForeignKey('inventory.hull.hull_id', onupdate='CASCADE'), comment='Identificação do casco.')
-    model = Column(String(30), nullable=False, comment='Modelo da boia.')
-    latitude_deploy = Column(Numeric(6, 4), nullable=False, comment='Latitude do lançamento da boia.')
-    longitude_deploy = Column(Numeric(6, 4), nullable=False, comment='Ponto de longitude do lançamento da boia.')
-    deploy_date = Column(Date, nullable=False, comment='Data do lançamento da boia.')
-    last_date_time = Column(DateTime, comment='Timestamp do último dado da boia.')
-    last_latitude = Column(Numeric(6, 4))
-    last_longitude = Column(Numeric(6, 4), comment='Última posição de longitude.')
-    geom_deploy = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude_deploy)::double precision, (latitude_deploy)::double precision), 4326)', persisted=True))
-    geom_last_position = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((last_longitude)::double precision, (last_latitude)::double precision), 4326)', persisted=True))
-    project_id = Column(ForeignKey('institution.project.id'), comment='Id do projeto da boia')
+    @validator('geom_last_position', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-    hull = relationship('Hull')
-    project = relationship('Project')
+    class Config:
+        orm_mode = True
+
+
+class SpotterGeneralBase(BaseModel):
+    id: Optional[int]
+    buoy_id: Optional[int]
+    wspd1: Optional[str]
+    wdir1: Optional[str]
+    latitude: Optional[str]
+    longitude: Optional[str]
+    date_time: Optional[str]
+    swvht1: Optional[str]
+    tp1: Optional[str]
+    tm1: Optional[str]
+    pkdir1: Optional[str]
+    pkspread1: Optional[str]
+    wvdir1: Optional[str]
+    wvspread1: Optional[str]
+    sst: Optional[float]
+
+    class Config:
+        orm_mode = True
+
+class SpotterSystemBase(BaseModel):
+
+    id: Optional[int]
+    buoy_id: Optional[int]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    battery_power: Optional[float]
+    battery_voltage: Optional[float]
+    humidity: Optional[float]
+    solar_voltage: Optional[float]
+
+    class Config:
+        orm_mode = True
+
+class SpotterWavesBase(BaseModel):
+
+    id: Optional[int]
+    buoy_id: Optional[int]
+    date_time: Optional[datetime.datetime]
+    frequency: Optional[str]
+    df: Optional[str]
+    a1: Optional[str]
+    b1: Optional[str]
+    a2: Optional[str]
+    b2: Optional[str]
+    varianceDensity: Optional[str]
+    direction: Optional[str]
+    directionalSpread: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+
+    class Config:
+        orm_mode = True

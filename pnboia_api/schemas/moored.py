@@ -1,416 +1,452 @@
 # coding: utf-8
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, validator, Json
 import datetime
 from typing import Optional, Any, List
+from geojson_pydantic import Feature, Polygon, Point
 
-class BuoyBase(BaseModel):
-    id: Optional[int]
-    name_buoy: Optional[str]
-    model: Optional[str]
-    lat: Optional[float]
-    lon: Optional[float]
-    depth: Optional[int]
-    deploy_date: Optional[datetime.datetime]
-    status: Optional[str]
-    wmo_number: Optional[str]
-    duration_wave: Optional[int]
-    h_sensor_pres: Optional[float]
-    d_sensor_wtmp: Optional[float]
-    wtmp_prec: Optional[float]
-    wind_avg: Optional[float]
-    h_sensor_wind: Optional[float]
-    h_sensor_atmp: Optional[float]
-    gust_avg: Optional[int]
-    atmp_avg: Optional[int]
-    d_curr: Optional[float]
-    h_sensor_wind_2: Optional[float]
+from geoalchemy2.shape import to_shape 
+from geoalchemy2.elements import WKBElement
 
-	buoy_id: Optional[int]
-	hull_id: Optional[int]
-	name: Optional[str]
-	deploy_date: Optional[datetime.date]
-	last_date_time: Optional[datetime.timestamp]
-	latitude: Optional[float]
-	longitude: Optional[float]
-	geom: geometry(POINT 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude::double precision latitude::double precision)4326)) STORED
-	status: Optional[bool]
-	mode: Optional[str]
-	watch_circle_distance: Optional[int]
-	wmo_number: Optional[str]
-	antenna_id: Optional[str]
-	open_data: Optional[bool]
-	link_site_pnboia: text
-	metarea_section: Optional[str]
-	project_id: Optional[int]
-	CONSTRAINT buoys_pk PRIMARY KEY (buoy_id)
-
-
-    class Config:
-        orm_mode = True
-
+from pnboia_api.models.moored import Buoy
 from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
 from geoalchemy2.types import Geometry
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-metadata = Base.metadata
+def ewkb_to_wkt(geom: WKBElement):
+    """
+    Converts a geometry formated as WKBE to WKT 
+    in order to parse it into pydantic Model
 
-class MetareaVBase(BaseModel):
-
-    area_id: Optional[int]
-    area: Optional[]
-    geometry: Optional[]
+    Args:
+        geom (WKBElement): A geometry from GeoAlchemy query
+    """
+    return to_shape(geom).wkt
 
 class BuoyBase(BaseModel):
 
     buoy_id: Optional[int]
     hull_id: Optional[int]
-    name: Optional[]
-    deploy_date: Optional[datetime.datetime]
-    last_date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-    status: Optional[]
-    mode: Optional[]
-    watch_circle_distance: Optional[]
-    wmo_number: Optional[]
-    antenna_id: Optional[int]
-    open_data: Optional[]
-    link_site_pnboia: Optional[]
-    metarea_section: Optional[]
+    name: Optional[str]
+    deploy_date: Optional[datetime.date]
+    last_date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    status: Optional[bool]
+    mode: Optional[str]
+    watch_circle_distance: Optional[int]
+    wmo_number: Optional[str]
+    antenna_id: Optional[str]
+    open_data: Optional[bool]
+    link_site_pnboia: Optional[str]
+    metarea_section: Optional[str]
     project_id: Optional[int]
 
-    hull: Optional[]
-    metarea_v: Optional[]
-    project: Optional[]
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-
-class AlertBase(BaseModel):
-
-    id: Optional[int]
-    buoy_id: Optional[int]
-    drift: Optional[]
-    transmission: Optional[]
-    transmission_gap: Optional[]
-    sensor_fail: Optional[]
-    manual_watch_circle: Optional[]
-    auto_drift_alert: Optional[]
-
-    buoy: Optional[]
-
+    class Config:
+        orm_mode = True
 
 class AxysAdcpBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    year: Optional[]
-    month: Optional[]
-    day: Optional[]
-    hour: Optional[]
-    cspd1: Optional[]
-    cdir1: Optional[]
-    cspd2: Optional[]
-    cdir2: Optional[]
-    cspd3: Optional[]
-    cdir3: Optional[]
-    cspd4: Optional[]
-    cdir4: Optional[]
-    cspd5: Optional[]
-    cdir5: Optional[]
-    cspd6: Optional[]
-    cdir6: Optional[]
-    cspd7: Optional[]
-    cdir7: Optional[]
-    cspd8: Optional[]
-    cdir8: Optional[]
-    cspd9: Optional[]
-    cdir9: Optional[]
-    cspd10: Optional[]
-    cdir10: Optional[]
-    cspd11: Optional[]
-    cdir11: Optional[]
-    cspd12: Optional[]
-    cdir12: Optional[]
-    cspd13: Optional[]
-    cdir13: Optional[]
-    cspd14: Optional[]
-    cdir14: Optional[]
-    cspd15: Optional[]
-    cdir15: Optional[]
-    cspd16: Optional[]
-    cdir16: Optional[]
-    cspd17: Optional[]
-    cdir17: Optional[]
-    cspd18: Optional[]
-    cdir18: Optional[]
-    cspd19: Optional[]
-    cdir19: Optional[]
-    cspd20: Optional[]
-    cdir20: Optional[]
+    year: Optional[int]
+    month: Optional[int]
+    day: Optional[int]
+    hour: Optional[int]
+    cspd1: Optional[float]
+    cdir1: Optional[int]
+    cspd2: Optional[float]
+    cdir2: Optional[int]
+    cspd3: Optional[float]
+    cdir3: Optional[int]
+    cspd4: Optional[float]
+    cdir4: Optional[int]
+    cspd5: Optional[float]
+    cdir5: Optional[int]
+    cspd6: Optional[float]
+    cdir6: Optional[int]
+    cspd7: Optional[float]
+    cdir7: Optional[int]
+    cspd8: Optional[float]
+    cdir8: Optional[int]
+    cspd9: Optional[float]
+    cdir9: Optional[int]
+    cspd10: Optional[float]
+    cdir10: Optional[int]
+    cspd11: Optional[float]
+    cdir11: Optional[int]
+    cspd12: Optional[float]
+    cdir12: Optional[int]
+    cspd13: Optional[float]
+    cdir13: Optional[int]
+    cspd14: Optional[float]
+    cdir14: Optional[int]
+    cspd15: Optional[float]
+    cdir15: Optional[int]
+    cspd16: Optional[float]
+    cdir16: Optional[int]
+    cspd17: Optional[float]
+    cdir17: Optional[int]
+    cspd18: Optional[float]
+    cdir18: Optional[int]
+    cspd19: Optional[float]
+    cdir19: Optional[int]
+    cspd20: Optional[float]
+    cdir20: Optional[int]
 
-    buoy: Optional[]
-
+    class Config:
+        orm_mode = True
 
 class AxysGeneralBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-    battery: Optional[]
-    compass: Optional[]
-    wspd1: Optional[]
-    wdir1: Optional[]
-    gust1: Optional[]
-    wspd2: Optional[]
-    wdir2: Optional[]
-    gust2: Optional[]
-    atmp: Optional[]
-    srad: Optional[]
-    rh: Optional[]
-    dewpt: Optional[]
-    pres: Optional[]
-    sst: Optional[]
-    cspd1: Optional[]
-    cdir1: Optional[]
-    cspd2: Optional[]
-    cdir2: Optional[]
-    cspd3: Optional[]
-    cdir3: Optional[]
-    swvht: Optional[]
-    tp: Optional[]
-    wvdir: Optional[]
-    mxwvht: Optional[]
-    wvspread: Optional[]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    battery: Optional[float]
+    compass: Optional[int]
+    wspd1: Optional[float]
+    wdir1: Optional[int]
+    gust1: Optional[float]
+    wspd2: Optional[float]
+    wdir2: Optional[int]
+    gust2: Optional[float]
+    atmp: Optional[float]
+    srad: Optional[float]
+    rh: Optional[float]
+    dewpt: Optional[float]
+    pres: Optional[float]
+    sst: Optional[float]
+    cspd1: Optional[float]
+    cdir1: Optional[int]
+    cspd2: Optional[float]
+    cdir2: Optional[int]
+    cspd3: Optional[float]
+    cdir3: Optional[int]
+    swvht: Optional[float]
+    tp: Optional[float]
+    wvdir: Optional[float]
+    mxwvht: Optional[float]
+    wvspread: Optional[float]
 
-    buoy: Optional[]
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
+
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
+
+class BmobrGeneralBase(BaseModel):
+
+    id: Optional[int]
+    buoy_id: Optional[int]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    battery: Optional[float]
+    compass: Optional[float]
+    wspd1: Optional[float]
+    wdir1: Optional[int]
+    gust1: Optional[float]
+    wspd2: Optional[float]
+    wdir2: Optional[int]
+    gust2: Optional[float]
+    atmp: Optional[float]
+    srad: Optional[float]
+    rh: Optional[float]
+    dewpt: Optional[float]
+    pres: Optional[float]
+    sst: Optional[float]
+    cspd1: Optional[float]
+    cdir1: Optional[int]
+    cspd2: Optional[float]
+    cdir2: Optional[int]
+    cspd3: Optional[float]
+    cdir3: Optional[int]
+    cspd4: Optional[float]
+    cdir4: Optional[int]
+    cspd5: Optional[float]
+    cdir5: Optional[int]
+    cspd6: Optional[float]
+    cdir6: Optional[int]
+    cspd7: Optional[float]
+    cdir7: Optional[int]
+    cspd8: Optional[float]
+    cdir8: Optional[int]
+    cspd9: Optional[float]
+    cdir9: Optional[int]
+    cspd10: Optional[float]
+    cdir10: Optional[int]
+    cspd11: Optional[float]
+    cdir11: Optional[int]
+    cspd12: Optional[float]
+    cdir12: Optional[int]
+    cspd13: Optional[float]
+    cdir13: Optional[int]
+    cspd14: Optional[float]
+    cdir14: Optional[int]
+    cspd15: Optional[float]
+    cdir15: Optional[int]
+    cspd16: Optional[float]
+    cdir16: Optional[int]
+    cspd17: Optional[float]
+    cdir17: Optional[int]
+    cspd18: Optional[float]
+    cdir18: Optional[int]
+    swvht1: Optional[float]
+    tp1: Optional[float]
+    mxwvht1: Optional[float]
+    wvdir1: Optional[int]
+    wvspread1: Optional[int]
+    swvht2: Optional[float]
+    tp2: Optional[float]
+    wvdir2: Optional[int]
+
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
+
+    # buoy: Optional[Buoy]
+    # bmobr_raw: Optional[BmobrRaw]
+    class Config:
+        orm_mode = True
 
 
 class BmobrRawBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    date_time: Optional[]
-    data_string: Optional[]
+    date_time: Optional[datetime.datetime]
+    data_string: Optional[str]
 
-    buoy: Optional[]
+    # buoy: Optional[Buoy]
 
+    class Config:
+        orm_mode = True
 
 class BmobrTriaxysRawBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    date_time: Optional[]
-    data_string: Optional[]
+    date_time: Optional[datetime.datetime]
+    data_string: Optional[str]
 
-    buoy: Optional[]
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
 
+class CriosferaGeneralBase(BaseModel):
 
-class RegisterBuoyBase(BaseModel):
+    id: Optional[float]
+    buoy_id: Optional[float]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    battery: Optional[float]
+    temp_datalogger: Optional[float]
+    atmp: Optional[float]
+    pres: Optional[float]
+    rh: Optional[float]
+    srad: Optional[float]
+    cond: Optional[float]
+    sss: Optional[float]
+    sst: Optional[float]
+    wspd1: Optional[float]
+    wdir1: Optional[float]
+    status1: Optional[float]
+    wspd2: Optional[float]
+    wdir2: Optional[float]
 
-    id: Optional[int]
-    buoy_id: Optional[int]
-    location: Optional[]
-    state: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    start_date: Optional[datetime.datetime]
-    end_date: Optional[datetime.datetime]
-    duration: Optional[]
-    current_configuration: Optional[]
-    depth: Optional[]
-    cable: Optional[]
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-    buoy: Optional[]
+    # buoy: Optional[Buoy]
+    # bmobr_raw: Optional[BmobrRaw]
+    class Config:
+        orm_mode = True
 
-class SpotterGeneralBase(BaseModel):
-
-    id: Optional[int]
-    buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-    wspd: Optional[]
-    wdir: Optional[]
-    sst: Optional[]
-    swvht: Optional[]
-    tp: Optional[]
-    tm: Optional[]
-    pkdir: Optional[]
-    wvdir: Optional[]
-    pkspread: Optional[]
-    wvspread: Optional[]
-
-    buoy: Optional[]
-
-
-class SpotterSmartMooringBase(BaseModel):
+class SpotterAllBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    sensors_data: Optional[]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    wspd1: Optional[float]
+    wdir1: Optional[int]
+    sst: Optional[float]
+    swvht1: Optional[float]
+    tp1: Optional[float]
+    tm1: Optional[float]
+    pkdir1: Optional[int]
+    wvdir1: Optional[int]
+    pkspread1: Optional[int]
+    wvspread1: Optional[int]
+    sensors_data: Optional[dict]
 
-    buoy: Optional[]
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
 
-class SpotterSmartMoringConfigBase(BaseModel):
+class SpotterSmartMooringConfigBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    sensor: Optional[]
-    depth: Optional[]
+    sensor: Optional[str]
+    depth: Optional[int]
 
-    buoy: Optional[]
+    # buoy: Optional[Buoy]
 
+    class Config:
+        orm_mode = True
 
 class SpotterSystemBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-    battery_power: Optional[]
-    battery_voltage: Optional[]
-    solar_voltage: Optional[]
-    humidity: Optional[]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    battery_power: Optional[float]
+    battery_voltage: Optional[float]
+    solar_voltage: Optional[float]
+    humidity: Optional[float]
 
-    buoy: Optional[]
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-
-class TagBase(BaseModel):
-
-    id: Optional[int]
-    buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-
-    buoy: Optional[]
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
 
 
-class BmobrGeneralBase(BaseModel):
-
-    id: Optional[int]
-    buoy_id: Optional[int]
-    date_time: Optional[]
-    latitude: Optional[]
-    longitude: Optional[]
-    geom: Optional[]
-    battery: Optional[]
-    compass: Optional[]
-    wspd1: Optional[]
-    wdir1: Optional[]
-    gust1: Optional[]
-    wspd2: Optional[]
-    wdir2: Optional[]
-    gust2: Optional[]
-    atmp: Optional[]
-    srad: Optional[]
-    rh: Optional[]
-    dewpt: Optional[]
-    pres: Optional[]
-    sst: Optional[]
-    cspd1: Optional[]
-    cdir1: Optional[]
-    cspd2: Optional[]
-    cdir2: Optional[]
-    cspd3: Optional[]
-    cdir3: Optional[]
-    cspd4: Optional[]
-    cdir4: Optional[]
-    cspd5: Optional[]
-    cdir5: Optional[]
-    cspd6: Optional[]
-    cdir6: Optional[]
-    cspd7: Optional[]
-    cdir7: Optional[]
-    cspd8: Optional[]
-    cdir8: Optional[]
-    cspd9: Optional[]
-    cdir9: Optional[]
-    cspd10: Optional[]
-    cdir10: Optional[]
-    cspd11: Optional[]
-    cdir11: Optional[]
-    cspd12: Optional[]
-    cdir12: Optional[]
-    cspd13: Optional[]
-    cdir13: Optional[]
-    cspd14: Optional[]
-    cdir14: Optional[]
-    cspd15: Optional[]
-    cdir15: Optional[]
-    cspd16: Optional[]
-    cdir16: Optional[]
-    cspd17: Optional[]
-    cdir17: Optional[]
-    cspd18: Optional[]
-    cdir18: Optional[]
-    swvht1: Optional[]
-    tp1: Optional[]
-    mxwvht1: Optional[]
-    wvdir1: Optional[]
-    wvspread1: Optional[]
-    swvht2: Optional[]
-    tp2: Optional[]
-    wvdir2: Optional[]
-
-    buoy: Optional[]
-    bmobr_raw: Optional[]
-
-
-class BmobrTriaxyBase(BaseModel):
-
+class TriaxysGeneralBase(BaseModel):
     id: Optional[int]
     buoy_id: Optional[int]
     raw_id: Optional[int]
+    message_id: Optional[str]
     date_time: Optional[datetime.datetime]
-    mean_average_direction: Optional[float]
-    spread_direction: Optional[float]
-    period: Optional[float]
-    energy: Optional[float]
-    wvdir: Optional[float]
-    spread: Optional[float]
+    latitude: Optional[str]
+    longitude: Optional[float]
+    geom: Optional[str]
+    wavestats_timestamp: Optional[int]
+    wavestats_duration: Optional[int]
+    zero_crossings: Optional[int]
+    avwvht: Optional[float]
+    tav: Optional[float]
+    mxwvht1: Optional[float]
+    tmax: Optional[float]
+    pk_crest: Optional[float]
+    swvht1: Optional[float]
+    tsig: Optional[float]
+    h110: Optional[float]
+    t110: Optional[float]
+    tm02: Optional[float]
+    tp1: Optional[float]
+    tp_dir: Optional[float]
+    tp_spread: Optional[float]
+    tp5: Optional[float]
+    hm0: Optional[float]
+    te: Optional[float]
+    wvdir1: Optional[int]
+    tm01: Optional[float]
+    sst: Optional[float]
 
-class OperationBase(BaseModel):
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
+
+class TriaxysRawBase(BaseModel):
     id: Optional[int]
-    ship: Optional[]
-    start_date: Optional[datetime.datetime]
-    end_date: Optional[datetime.datetime]
-    type: Optional[str]
-    report: Optional[str]
-    team: Optional[dict]
-    register_id: Optional[int]
+    buoy_id: Optional[int]
+    prime_id: Optional[int]
+    data_type: Optional[str]
+    date_time_transm: Optional[datetime.datetime]
+    date_time: Optional[datetime.datetime]
+    string: Optional[str]
 
-class SensorBase(BaseModel):
+    class Config:
+        orm_mode = True
 
+class TriaxysStatusBase(BaseModel):
     id: Optional[int]
-    sensor_id: Optional[int]
-    sensor_type: Optional[str]
-    register_id: Optional[int]
+    raw_id: Optional[int]
+    buoy_id: Optional[int]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    watch_circle_status: Optional[int]
+    av_serv_persec: Optional[float]
+    inst_node_current: Optional[float]
+    battery: Optional[float]
+    pcb_temp: Optional[float]
+    n_resets: Optional[int]
+    curr_boot_timestamp: Optional[int]
+    shutdown_type: Optional[int]
+    memory_max_free: Optional[int]
+    log_error_count: Optional[int]
+    last_log_error: Optional[int]
+    free_space: Optional[int]
+    error_count: Optional[int]
+    solar_voltage: Optional[float]
+    water_intrusion_voltage: Optional[float]
+    time_sync: Optional[float]
+    terminal_cnr: Optional[float]
 
 
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
-class SetupBuoyBase(BaseModel):
-
-    id: Optional[int]
-    height_anemometer_1: Optional[float]
-    height_anemometer_2: Optional[float]
-    height_thermohygrometer: Optional[float]
-    height_barometer: Optional[float]
-    depth_adcp: Optional[float]
-    depth_temp_sensor: Optional[float]
-    register_id: Optional[int]
+    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True

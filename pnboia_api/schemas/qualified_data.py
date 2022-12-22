@@ -1,401 +1,172 @@
-
 # coding: utf-8
-from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, Numeric, SmallInteger, String, Text, text
+from pydantic import BaseModel, HttpUrl, validator, Json
+import datetime
+from typing import Optional, Any, List
+from geojson_pydantic import Feature, Polygon, Point
+
+from geoalchemy2.shape import to_shape 
+from geoalchemy2.elements import WKBElement
+
+from pnboia_api.models.moored import Buoy
+from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
 from geoalchemy2.types import Geometry
+
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-metadata = Base.metadata
+def ewkb_to_wkt(geom: WKBElement):
+    """
+    Converts a geometry formated as WKBE to WKT 
+    in order to parse it into pydantic Model
+
+    Args:
+        geom (WKBElement): A geometry from GeoAlchemy query
+    """
+    return to_shape(geom).wkt
+
+class QualifiedDataBase(BaseModel):
+
+    id: Optional[int]
+    raw_id: Optional[int]
+    buoy_id: Optional[int]
+    date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    geom: Optional[str]
+    battery: Optional[float]
+    flag_battery: Optional[int]
+    rh: Optional[float]
+    flag_rh: Optional[int]
+    wspd1: Optional[float]
+    flag_wspd1: Optional[int]
+    wdir1: Optional[int]
+    flag_wdir1: Optional[int]
+    wspd2: Optional[float]
+    flag_wspd2: Optional[int]
+    wdir2: Optional[int]
+    flag_wdir2: Optional[int]
+    gust1: Optional[float]
+    flag_gust1: Optional[int]
+    gust2: Optional[float]
+    flag_gust2: Optional[int]
+    atmp: Optional[float]
+    flag_atmp: Optional[int]
+    pres: Optional[float]
+    flag_pres: Optional[int]
+    srad: Optional[float]
+    flag_srad: Optional[int]
+    dewpt: Optional[float]
+    flag_dewpt: Optional[int]
+    sst: Optional[float]
+    flag_sst: Optional[int]
+    cspd1: Optional[float]
+    flag_cspd1: Optional[int]
+    cdir1: Optional[int]
+    flag_cdir1: Optional[int]
+    cspd2: Optional[float]
+    flag_cspd2: Optional[int]
+    cdir2: Optional[int]
+    flag_cdir2: Optional[int]
+    cspd3: Optional[float]
+    flag_cspd3: Optional[int]
+    cdir3: Optional[int]
+    flag_cdir3: Optional[int]
+    cspd4: Optional[float]
+    flag_cspd4: Optional[int]
+    cdir4: Optional[int]
+    flag_cdir4: Optional[int]
+    cspd5: Optional[float]
+    flag_cspd5: Optional[int]
+    cdir5: Optional[int]
+    flag_cdir5: Optional[int]
+    cspd6: Optional[float]
+    flag_cspd6: Optional[int]
+    cdir6: Optional[int]
+    flag_cdir6: Optional[int]
+    cspd7: Optional[float]
+    flag_cspd7: Optional[int]
+    cdir7: Optional[int]
+    flag_cdir7: Optional[int]
+    cspd8: Optional[float]
+    flag_cspd8: Optional[int]
+    cdir8: Optional[int]
+    flag_cdir8: Optional[int]
+    cspd9: Optional[float]
+    flag_cspd9: Optional[int]
+    cdir9: Optional[int]
+    flag_cdir9: Optional[int]
+    cspd10: Optional[float]
+    flag_cspd10: Optional[int]
+    cdir10: Optional[int]
+    flag_cdir10: Optional[int]
+    cspd11: Optional[int]
+    flag_cspd11: Optional[int]
+    cdir11: Optional[int]
+    flag_cdir11: Optional[int]
+    cspd12: Optional[float]
+    flag_cspd12: Optional[int]
+    cdir12: Optional[int]
+    flag_cdir12: Optional[int]
+    cspd13: Optional[float]
+    flag_cspd13: Optional[int]
+    cdir13: Optional[int]
+    flag_cdir13: Optional[int]
+    cspd14: Optional[float]
+    flag_cspd14: Optional[int]
+    cdir14: Optional[int]
+    flag_cdir14: Optional[int]
+    cspd15: Optional[float]
+    flag_cspd15: Optional[int]
+    cdir15: Optional[int]
+    flag_cdir15: Optional[int]
+    cspd16: Optional[float]
+    flag_cspd16: Optional[int]
+    cdir16: Optional[int]
+    flag_cdir16: Optional[int]
+    cspd17: Optional[float]
+    flag_cspd17: Optional[int]
+    cdir17: Optional[int]
+    flag_cdir17: Optional[int]
+    cspd18: Optional[float]
+    flag_cspd18: Optional[int]
+    cdir18: Optional[int]
+    flag_cdir18: Optional[int]
+    swvht1: Optional[float]
+    flag_swvht1: Optional[int]
+    tp1: Optional[float]
+    flag_tp1: Optional[int]
+    mxwvht1: Optional[float]
+    flag_mxwvht1: Optional[int]
+    wvdir1: Optional[int]
+    flag_wvdir1: Optional[int]
+    wvspread1: Optional[int]
+    flag_wvspread1: Optional[int]
+    swvht2: Optional[float]
+    flag_swvht2: Optional[int]
+    tp2: Optional[float]
+    flag_tp2: Optional[int]
+    wvdir2: Optional[int]
+    flag_wvdir2: Optional[int]
+    tm1: Optional[float]
+    flag_tm1: Optional[int]
+    pkdir1: Optional[float]
+    flag_pkdir1: Optional[int]
+    pkspread1: Optional[float]
+    flag_pkspread1: Optional[int]
+    sensors_data_flagged: Optional[dict]
+    cond: Optional[float]
+    flag_cond: Optional[int]
+    sss: Optional[float]
+    flag_sss: Optional[int]
+
+    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
 
 
-class AxysAdcpQualified(AxysAdcp):
-    __tablename__ = 'axys_adcp_qualified'
-    __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados e com suas respectivas flags.'}
-
-    id = Column(ForeignKey('moored.axys_adcp.id'), primary_key=True, comment='ID do dado. O ID é o mesmo ID do dado nas tabelas originais dos dados brutos.')
-    buoy_id = Column(ForeignKey('moored.buoys.buoy_id'), comment='ID da boia')
-    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
-    latitude = Column(Numeric(8, 6), nullable=False)
-    longitude = Column(Numeric(8, 6), nullable=False)
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
-    cspd1 = Column(Numeric(4, 2))
-    flag_cspd1 = Column(SmallInteger)
-    cdir1 = Column(SmallInteger)
-    flag_cdir1 = Column(SmallInteger)
-    cspd2 = Column(Numeric(4, 2))
-    flag_cspd2 = Column(SmallInteger)
-    cdir2 = Column(SmallInteger)
-    flag_cdir2 = Column(SmallInteger)
-    cspd3 = Column(Numeric(4, 2))
-    flag_cspd3 = Column(SmallInteger)
-    cdir3 = Column(SmallInteger)
-    flag_cdir3 = Column(SmallInteger)
-    cspd4 = Column(Numeric(4, 2))
-    flag_cspd4 = Column(SmallInteger)
-    cdir4 = Column(SmallInteger)
-    flag_cdir4 = Column(SmallInteger)
-    cspd5 = Column(Numeric(4, 2))
-    flag_cspd5 = Column(SmallInteger)
-    cdir5 = Column(SmallInteger)
-    flag_cdir5 = Column(SmallInteger)
-    cspd6 = Column(Numeric(4, 2))
-    flag_cspd6 = Column(SmallInteger)
-    cdir6 = Column(SmallInteger)
-    flag_cdir6 = Column(SmallInteger)
-    cspd7 = Column(Numeric(4, 2))
-    flag_cspd7 = Column(SmallInteger)
-    cdir7 = Column(SmallInteger)
-    flag_cdir7 = Column(SmallInteger)
-    cspd8 = Column(Numeric(4, 2))
-    flag_cspd8 = Column(SmallInteger)
-    cdir8 = Column(SmallInteger)
-    flag_cdir8 = Column(SmallInteger)
-    cspd9 = Column(Numeric(4, 2))
-    flag_cspd9 = Column(SmallInteger)
-    cdir9 = Column(SmallInteger)
-    flag_cdir9 = Column(SmallInteger)
-    cspd10 = Column(Numeric(4, 2))
-    flag_cspd10 = Column(SmallInteger)
-    cdir10 = Column(SmallInteger)
-    flag_cdir10 = Column(SmallInteger)
-    cspd11 = Column(SmallInteger)
-    flag_cspd11 = Column(SmallInteger)
-    cdir11 = Column(SmallInteger)
-    flag_cdir11 = Column(SmallInteger)
-    cspd12 = Column(Numeric(4, 2))
-    flag_cspd12 = Column(SmallInteger)
-    cdir12 = Column(SmallInteger)
-    flag_cdir12 = Column(SmallInteger)
-    cspd13 = Column(Numeric(4, 2))
-    flag_cspd13 = Column(SmallInteger)
-    cdir13 = Column(SmallInteger)
-    flag_cdir13 = Column(SmallInteger)
-    cspd14 = Column(Numeric(4, 2))
-    flag_cspd14 = Column(SmallInteger)
-    cdir14 = Column(SmallInteger)
-    flag_cdir14 = Column(SmallInteger)
-    cspd15 = Column(Numeric(4, 2))
-    flag_csdp15 = Column(SmallInteger)
-    cdir15 = Column(SmallInteger)
-    flag_cdir15 = Column(SmallInteger)
-    cspd16 = Column(Numeric(4, 2))
-    flag_cspd16 = Column(SmallInteger)
-    cdir16 = Column(SmallInteger)
-    flag_cdir16 = Column(SmallInteger)
-    cspd17 = Column(Numeric(4, 2))
-    flag_cpsd17 = Column(SmallInteger)
-    cdir17 = Column(SmallInteger)
-    flag_cdir17 = Column(SmallInteger)
-    cspd18 = Column(Numeric(4, 2))
-    flag_cspd18 = Column(SmallInteger)
-    cdir18 = Column(SmallInteger)
-    flag_cdir18 = Column(SmallInteger)
-    cspd19 = Column(Numeric(4, 2))
-    flag_cspd19 = Column(SmallInteger)
-    cdir19 = Column(SmallInteger)
-    flag_cdir19 = Column(SmallInteger)
-    cspd20 = Column(Numeric(4, 2))
-    flag_cspd20 = Column(SmallInteger)
-    cdir20 = Column(SmallInteger)
-    flag_cdir20 = Column(SmallInteger)
-
-    buoy = relationship('Buoy')
-
-
-class AxysGeneralQualified(AxysGeneral):
-    __tablename__ = 'axys_general_qualified'
-    __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados e com suas respectivas flags.'}
-
-    id = Column(ForeignKey('moored.axys_general.id'), primary_key=True, comment='ID do dado. O ID é o mesmo ID do dado nas tabelas originais dos dados brutos.')
-    buoy_id = Column(ForeignKey('moored.buoys.buoy_id'), comment='ID da boia')
-    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
-    latitude = Column(Numeric(8, 6), nullable=False)
-    longitude = Column(Numeric(8, 6), nullable=False)
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
-    battery = Column(Numeric(4, 2), comment='Voltagem da Bateria (Volts).')
-    flag_battery = Column(SmallInteger, comment='Flag para bateria.')
-    rh = Column(Numeric(4, 2), comment='Relative Humidity - Umidade Relativa, em %.')
-    flag_rh = Column(SmallInteger)
-    wspd1 = Column(Numeric(4, 2), comment='Wind Speed 1 - Velocidade do Vento, Anemomêtro 1, em m/s.')
-    flag_wspd1 = Column(SmallInteger)
-    wdir1 = Column(SmallInteger, comment='Wind Direction 1 - Direção do Vento, Anemomêtro 1, em graus.')
-    flag_wdir1 = Column(SmallInteger)
-    wspd2 = Column(Numeric(4, 2), comment='Wind Speed 2 - Velocidade de Vento, Anemomêtro 2, em m/s.')
-    flag_wspd2 = Column(SmallInteger)
-    wdir2 = Column(SmallInteger, comment='Wind Direction 2 - Direção de Vento 2, em graus.')
-    flag_wdir2 = Column(SmallInteger)
-    gust1 = Column(Numeric(4, 2), comment='Wind Gust 1 - Rajada de Vento, Anemômetro 1, em m/s.')
-    flag_gust1 = Column(SmallInteger)
-    gust2 = Column(Numeric(4, 2), comment='Wind Gust 2 - Rajada de Vento, Anemômetro 2, em m/s.')
-    flag_gust2 = Column(SmallInteger)
-    atmp = Column(Numeric(4, 2), comment='Air Temperature - Temperatura do Ar, em graus Celsius.')
-    flag_atmp = Column(SmallInteger)
-    pres = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
-    flag_pres = Column(SmallInteger)
-    srad = Column(Numeric(4, 2), comment='Solar Radiation - Radiação Solar, em W/m².')
-    flag_srad = Column(SmallInteger)
-    dewpt = Column(Numeric(4, 2), comment='Dew Point - Temperatura de Orvalho, em °C.')
-    flag_dewpt = Column(SmallInteger)
-    sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em °C.')
-    flag_sst = Column(SmallInteger)
-    cspd1 = Column(Numeric(4, 2), comment='Current Speed 1 - Velocidade de Corrente nível 1, em m/s.')
-    flag_cspd1 = Column(SmallInteger)
-    cdir1 = Column(SmallInteger)
-    flag_cdir1 = Column(SmallInteger)
-    cspd2 = Column(Numeric(4, 2))
-    flag_cspd2 = Column(SmallInteger)
-    cdir2 = Column(SmallInteger)
-    flag_cdir2 = Column(SmallInteger)
-    cspd3 = Column(Numeric(4, 2))
-    flag_cspd3 = Column(SmallInteger)
-    cdir3 = Column(SmallInteger)
-    flag_cdir3 = Column(SmallInteger)
-    cspd4 = Column(Numeric(4, 2))
-    flag_cspd4 = Column(SmallInteger)
-    cdir4 = Column(SmallInteger)
-    flag_cdir4 = Column(SmallInteger)
-    cspd5 = Column(Numeric(4, 2))
-    flag_cspd5 = Column(SmallInteger)
-    cdir5 = Column(SmallInteger)
-    flag_cdir5 = Column(SmallInteger)
-    cspd6 = Column(Numeric(4, 2))
-    flag_cspd6 = Column(SmallInteger)
-    cdir6 = Column(SmallInteger)
-    flag_cdir6 = Column(SmallInteger)
-    cspd7 = Column(Numeric(4, 2))
-    flag_cspd7 = Column(SmallInteger)
-    cdir7 = Column(SmallInteger)
-    flag_cdir7 = Column(SmallInteger)
-    cspd8 = Column(Numeric(4, 2))
-    flag_cspd8 = Column(SmallInteger)
-    cdir8 = Column(SmallInteger)
-    flag_cdir8 = Column(SmallInteger)
-    cspd9 = Column(Numeric(4, 2))
-    flag_cspd9 = Column(SmallInteger)
-    cdir9 = Column(SmallInteger)
-    flag_cdir9 = Column(SmallInteger)
-    cspd10 = Column(Numeric(4, 2))
-    flag_cspd10 = Column(SmallInteger)
-    cdir10 = Column(SmallInteger)
-    flag_cdir10 = Column(SmallInteger)
-    cspd11 = Column(SmallInteger)
-    flag_cspd11 = Column(SmallInteger)
-    cdir11 = Column(SmallInteger)
-    flag_cdir11 = Column(SmallInteger)
-    cspd12 = Column(Numeric(4, 2))
-    flag_cspd12 = Column(SmallInteger)
-    cdir12 = Column(SmallInteger)
-    flag_cdir12 = Column(SmallInteger)
-    cspd13 = Column(Numeric(4, 2))
-    flag_cspd13 = Column(SmallInteger)
-    cdir13 = Column(SmallInteger)
-    flag_cdir13 = Column(SmallInteger)
-    cspd14 = Column(Numeric(4, 2))
-    flag_cspd14 = Column(SmallInteger)
-    cdir14 = Column(SmallInteger)
-    flag_cdir14 = Column(SmallInteger)
-    cspd15 = Column(Numeric(4, 2))
-    flag_csdp15 = Column(SmallInteger)
-    cdir15 = Column(SmallInteger)
-    flag_cdir15 = Column(SmallInteger)
-    cspd16 = Column(Numeric(4, 2))
-    flag_cspd16 = Column(SmallInteger)
-    cdir16 = Column(SmallInteger)
-    flag_cdir16 = Column(SmallInteger)
-    cspd17 = Column(Numeric(4, 2))
-    flag_cpsd17 = Column(SmallInteger)
-    cdir17 = Column(SmallInteger)
-    flag_cdir17 = Column(SmallInteger)
-    cspd18 = Column(Numeric(4, 2))
-    flag_cspd18 = Column(SmallInteger)
-    cdir18 = Column(SmallInteger)
-    flag_cdir18 = Column(SmallInteger)
-    cspd19 = Column(Numeric(4, 2))
-    flag_cspd19 = Column(SmallInteger)
-    cdir19 = Column(SmallInteger)
-    flag_cdir19 = Column(SmallInteger)
-    cspd20 = Column(Numeric(4, 2))
-    flag_cspd20 = Column(SmallInteger)
-    cdir20 = Column(SmallInteger)
-    flag_cdir20 = Column(SmallInteger)
-    swvht1 = Column(Numeric(4, 2), comment='Sea Wave Height 1 - Altura Significativa de Onda, Sensor 1,')
-    flag_swvht1 = Column(SmallInteger)
-    tp1 = Column(Numeric(4, 2), comment='Peak Period 1 - Período de Pico, sensor 1 (Triaxys), em segundos.')
-    flag_tp1 = Column(SmallInteger)
-    mxwvht1 = Column(Numeric(4, 2), comment='Maximum Wave Height 1 - Altura Máxima de Onda, sensor 1 (Triaxys), em metros.')
-    flag_mxwvht1 = Column(SmallInteger)
-    wvdir1 = Column(SmallInteger, comment='Mean Wave Diretction 1 - Direção Média de Onda, sensor 1.')
-    flag_wvdir1 = Column(SmallInteger)
-    wvspread1 = Column(SmallInteger, comment='Wave Spread 1 - Direção de Espalhamento de Onda, Sensor 1')
-    flag_wvspread1 = Column(SmallInteger)
-    swvht2 = Column(Numeric(4, 2), comment='Sea Wave Height 2 - Altura Significativa de Onda, sensor 2 (UCMO - Nacional), em metros.')
-    flag_swvht2 = Column(SmallInteger)
-    tp2 = Column(Numeric(4, 2), comment='Peak Period 2 - Período de Pico, sensor 2 (UCMO - Nacional), em segundos.')
-    flag_tp2 = Column(SmallInteger)
-    wvdir2 = Column(SmallInteger, comment='Wave Peak Direction 2 - Direção de Pico Primário de Onda, sensor 2 (UCMO - Nacional), em graus.')
-    flag_wvdir2 = Column(SmallInteger)
-
-    buoy = relationship('Buoy')
-
-class SpotterGeneralQualified(SpotterGeneral):
-    __tablename__ = 'spotter_general_qualified'
-    __table_args__ = {'schema': 'qualified_data', 'comment': 'Dados qualificados das boias Spotter.'}
-
-    id = Column(ForeignKey('moored.spotter_general.id', onupdate='CASCADE'), primary_key=True, comment='Id do dado original')
-    buoy_id = Column(ForeignKey('moored.buoys.buoy_id', onupdate='CASCADE'), nullable=False, comment='Id da boia spotter.')
-    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP em horário ZULU.')
-    latitude = Column(Numeric(6, 4), nullable=False)
-    longitude = Column(Numeric(6, 4), nullable=False)
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
-    wspd = Column(Numeric(4, 2), comment='Wind Speed - Velocidade de Vento, em m/s. (variável calculada pela boia, não é observação direta)')
-    flag_wspd = Column(SmallInteger)
-    wdir = Column(SmallInteger, comment='Wind Direction - Direção de Vento, em graus (variável calculada pela boia, não é observação direta).')
-    flag_wdir = Column(SmallInteger)
-    sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em graus Celius.')
-    flag_sst = Column(SmallInteger)
-    swvht = Column(Numeric(4, 2), comment='Sea Wave Height - Altura Significativa, em metros.')
-    flag_swvht = Column(SmallInteger)
-    tp = Column(Numeric(4, 2), comment='Peak Period - Período de Pico, em segundos.')
-    flag_tp = Column(SmallInteger)
-    tm = Column(Numeric(4, 2), comment='Mean Period - Período Médio, em segundos.')
-    flag_tm = Column(SmallInteger)
-    pkdir = Column(SmallInteger, comment='Peak Wave Direction - Direção de Pico, em graus.')
-    flag_pkdir = Column(SmallInteger)
-    wvdir = Column(SmallInteger, comment='Mean Wave Direction - Direção Média de Onda, em graus.')
-    flag_wvdir = Column(SmallInteger)
-    pkspread = Column(SmallInteger, comment='Peak Directional Spread - Direção de Pico de Espalhamento, em graus.')
-    flag_pkspread = Column(SmallInteger)
-    wvspread = Column(SmallInteger, comment='Mean Wave Spread Direction - Direção Média de Espalhamento, em graus.')
-    flag_wvspread = Column(SmallInteger)
-
-    buoy = relationship('Buoy')
-
-
-class BmobrGeneralQualified(BmobrGeneral):
-    __tablename__ = 'bmobr_general_qualified'
-    __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados e com suas respectivas flags.'}
-
-    id = Column(ForeignKey('moored.bmobr_general.id', onupdate='CASCADE'), primary_key=True, comment='ID do dado. O ID é o mesmo ID do dado nas tabelas originais dos dados brutos.')
-    buoy_id = Column(ForeignKey('moored.buoys.buoy_id', onupdate='CASCADE'), comment='ID da boia')
-    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
-    latitude = Column(Numeric(8, 6), nullable=False)
-    longitude = Column(Numeric(8, 6), nullable=False)
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
-    battery = Column(Numeric(4, 2), comment='Voltagem da Bateria (Volts).')
-    flag_battery = Column(SmallInteger, comment='Flag para bateria.')
-    rh = Column(Numeric(4, 2), comment='Relative Humidity - Umidade Relativa, em %.')
-    flag_rh = Column(SmallInteger)
-    wspd1 = Column(Numeric(4, 2), comment='Wind Speed 1 - Velocidade do Vento, Anemomêtro 1, em m/s.')
-    flag_wspd1 = Column(SmallInteger)
-    wdir1 = Column(SmallInteger, comment='Wind Direction 1 - Direção do Vento, Anemomêtro 1, em graus.')
-    flag_wdir1 = Column(SmallInteger)
-    wspd2 = Column(Numeric(4, 2), comment='Wind Speed 2 - Velocidade de Vento, Anemomêtro 2, em m/s.')
-    flag_wspd2 = Column(SmallInteger)
-    wdir2 = Column(SmallInteger, comment='Wind Direction 2 - Direção de Vento 2, em graus.')
-    flag_wdir2 = Column(SmallInteger)
-    gust1 = Column(Numeric(4, 2), comment='Wind Gust 1 - Rajada de Vento, Anemômetro 1, em m/s.')
-    flag_gust1 = Column(SmallInteger)
-    gust2 = Column(Numeric(4, 2), comment='Wind Gust 2 - Rajada de Vento, Anemômetro 2, em m/s.')
-    flag_gust2 = Column(SmallInteger)
-    atmp = Column(Numeric(4, 2), comment='Air Temperature - Temperatura do Ar, em graus Celsius.')
-    flag_atmp = Column(SmallInteger)
-    pres = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
-    flag_pres = Column(SmallInteger)
-    srad = Column(Numeric(4, 2), comment='Solar Radiation - Radiação Solar, em W/m².')
-    flag_srad = Column(SmallInteger)
-    dewpt = Column(Numeric(4, 2), comment='Dew Point - Temperatura de Orvalho, em °C.')
-    flag_dewpt = Column(SmallInteger)
-    sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em °C.')
-    flag_sst = Column(SmallInteger)
-    cspd1 = Column(Numeric(4, 2), comment='Current Speed 1 - Velocidade de Corrente nível 1, em m/s.')
-    flag_cspd1 = Column(SmallInteger)
-    cdir1 = Column(SmallInteger)
-    flag_cdir1 = Column(SmallInteger)
-    cspd2 = Column(Numeric(4, 2))
-    flag_cspd2 = Column(SmallInteger)
-    cdir2 = Column(SmallInteger)
-    flag_cdir2 = Column(SmallInteger)
-    cspd3 = Column(Numeric(4, 2))
-    flag_cspd3 = Column(SmallInteger)
-    cdir3 = Column(SmallInteger)
-    flag_cdir3 = Column(SmallInteger)
-    cspd4 = Column(Numeric(4, 2))
-    flag_cspd4 = Column(SmallInteger)
-    cdir4 = Column(SmallInteger)
-    flag_cdir4 = Column(SmallInteger)
-    cspd5 = Column(Numeric(4, 2))
-    flag_cspd5 = Column(SmallInteger)
-    cdir5 = Column(SmallInteger)
-    flag_cdir5 = Column(SmallInteger)
-    cspd6 = Column(Numeric(4, 2))
-    flag_cspd6 = Column(SmallInteger)
-    cdir6 = Column(SmallInteger)
-    flag_cdir6 = Column(SmallInteger)
-    cspd7 = Column(Numeric(4, 2))
-    flag_cspd7 = Column(SmallInteger)
-    cdir7 = Column(SmallInteger)
-    flag_cdir7 = Column(SmallInteger)
-    cspd8 = Column(Numeric(4, 2))
-    flag_cspd8 = Column(SmallInteger)
-    cdir8 = Column(SmallInteger)
-    flag_cdir8 = Column(SmallInteger)
-    cspd9 = Column(Numeric(4, 2))
-    flag_cspd9 = Column(SmallInteger)
-    cdir9 = Column(SmallInteger)
-    flag_cdir9 = Column(SmallInteger)
-    cspd10 = Column(Numeric(4, 2))
-    flag_cspd10 = Column(SmallInteger)
-    cdir10 = Column(SmallInteger)
-    flag_cdir10 = Column(SmallInteger)
-    cspd11 = Column(SmallInteger)
-    flag_cspd11 = Column(SmallInteger)
-    cdir11 = Column(SmallInteger)
-    flag_cdir11 = Column(SmallInteger)
-    cspd12 = Column(Numeric(4, 2))
-    flag_cspd12 = Column(SmallInteger)
-    cdir12 = Column(SmallInteger)
-    flag_cdir12 = Column(SmallInteger)
-    cspd13 = Column(Numeric(4, 2))
-    flag_cspd13 = Column(SmallInteger)
-    cdir13 = Column(SmallInteger)
-    flag_cdir13 = Column(SmallInteger)
-    cspd14 = Column(Numeric(4, 2))
-    flag_cspd14 = Column(SmallInteger)
-    cdir14 = Column(SmallInteger)
-    flag_cdir14 = Column(SmallInteger)
-    cspd15 = Column(Numeric(4, 2))
-    flag_csdp15 = Column(SmallInteger)
-    cdir15 = Column(SmallInteger)
-    flag_cdir15 = Column(SmallInteger)
-    cspd16 = Column(Numeric(4, 2))
-    flag_cspd16 = Column(SmallInteger)
-    cdir16 = Column(SmallInteger)
-    flag_cdir16 = Column(SmallInteger)
-    cspd17 = Column(Numeric(4, 2))
-    flag_cpsd17 = Column(SmallInteger)
-    cdir17 = Column(SmallInteger)
-    flag_cdir17 = Column(SmallInteger)
-    cspd18 = Column(Numeric(4, 2))
-    flag_cspd18 = Column(SmallInteger)
-    cdir18 = Column(SmallInteger)
-    flag_cdir18 = Column(SmallInteger)
-    swvht1 = Column(Numeric(4, 2), comment='Sea Wave Height 1 - Altura Significativa de Onda, Sensor 1,')
-    flag_swvht1 = Column(SmallInteger)
-    tp1 = Column(Numeric(4, 2), comment='Peak Period 1 - Período de Pico, sensor 1 (Triaxys), em segundos.')
-    flag_tp1 = Column(SmallInteger)
-    mxwvht1 = Column(Numeric(4, 2), comment='Maximum Wave Height 1 - Altura Máxima de Onda, sensor 1 (Triaxys), em metros.')
-    flag_mxwvht1 = Column(SmallInteger)
-    wvdir1 = Column(SmallInteger, comment='Mean Wave Diretction 1 - Direção Média de Onda, sensor 1.')
-    flag_wvdir1 = Column(SmallInteger)
-    wvspread1 = Column(SmallInteger, comment='Wave Spread 1 - Direção de Espalhamento de Onda, Sensor 1')
-    flag_wvspread1 = Column(SmallInteger)
-    swvht2 = Column(Numeric(4, 2), comment='Sea Wave Height 2 - Altura Significativa de Onda, sensor 2 (UCMO - Nacional), em metros.')
-    flag_swvht2 = Column(SmallInteger)
-    tp2 = Column(Numeric(4, 2), comment='Peak Period 2 - Período de Pico, sensor 2 (UCMO - Nacional), em segundos.')
-    flag_tp2 = Column(SmallInteger)
-    wvdir2 = Column(SmallInteger, comment='Wave Peak Direction 2 - Direção de Pico Primário de Onda, sensor 2 (UCMO - Nacional), em graus.')
-    flag_wvdir2 = Column(SmallInteger)
-
-    buoy = relationship('Buoy')
-
+    class Config:
+        orm_mode = True

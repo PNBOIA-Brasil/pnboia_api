@@ -14,3 +14,5 @@ geoalchemy2
 
 mangum
 pydantic
+geojson_pydantic
+shapely
