@@ -7,12 +7,24 @@ from geojson_pydantic import Feature, Polygon, Point
 from geoalchemy2.shape import to_shape 
 from geoalchemy2.elements import WKBElement
 
+from pnboia_api.models.drift import BuoyDrift
 from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
 from geoalchemy2.types import Geometry
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.declarative import declarative_base
+
+
+def ewkb_to_wkt(geom: WKBElement):
+    """
+    Converts a geometry formated as WKBE to WKT 
+    in order to parse it into pydantic Model
+
+    Args:
+        geom (WKBElement): A geometry from GeoAlchemy query
+    """
+    return to_shape(geom).wkt
 
 class BuoyDriftBase(BaseModel):
     buoy_id: Optional[int]
@@ -28,32 +40,31 @@ class BuoyDriftBase(BaseModel):
     geom_last_position: Optional[str]
     project_id: Optional[int]
 
-    @validator('geom_deploy', pre=True,allow_reuse=True,whole=True, always=True)
-    def correct_geom_format(cls, v):
-        if not isinstance(v, WKBElement):
-            return None
-            # raise ValueError('must be a valid WKBE element')
-        return ewkb_to_wkt(v)
-
     @validator('geom_last_position', pre=True,allow_reuse=True,whole=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
-            return None
-            # raise ValueError('must be a valid WKBE element')
+            raise ValueError('must be a valid WKBE element')
         return ewkb_to_wkt(v)
+
+    @validator('geom_deploy', pre=True,allow_reuse=True,whole=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
+
 
     class Config:
         orm_mode = True
 
 
-class SpotterGeneralBase(BaseModel):
+class SpotterGeneralDriftBase(BaseModel):
     id: Optional[int]
     buoy_id: Optional[int]
     wspd1: Optional[str]
     wdir1: Optional[str]
     latitude: Optional[str]
     longitude: Optional[str]
-    date_time: Optional[str]
+    date_time: Optional[datetime.datetime]
     swvht1: Optional[str]
     tp1: Optional[str]
     tm1: Optional[str]
@@ -66,7 +77,7 @@ class SpotterGeneralBase(BaseModel):
     class Config:
         orm_mode = True
 
-class SpotterSystemBase(BaseModel):
+class SpotterSystemDriftBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]
@@ -81,7 +92,7 @@ class SpotterSystemBase(BaseModel):
     class Config:
         orm_mode = True
 
-class SpotterWavesBase(BaseModel):
+class SpotterWavesDriftBase(BaseModel):
 
     id: Optional[int]
     buoy_id: Optional[int]

@@ -12,7 +12,12 @@ psycopg2
 flask
 geoalchemy2
 
-mangum
 pydantic
 geojson_pydantic
 shapely
+python-jose
+email-validator
+passlib
+python-multipart
+PyJWT
+

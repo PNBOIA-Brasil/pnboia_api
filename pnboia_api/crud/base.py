@@ -1,5 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -53,7 +54,7 @@ class CRUDBase(Generic[ModelType]):
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)
 
-        max_id = db.query(func.max(self.model.buoy_id)).first()
+        max_id = db.query(func.max(self.model.id)).first()
 
         db_obj.id = max_id[0] + 1
 

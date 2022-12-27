@@ -3,14 +3,14 @@ from pnboia_api.models.drift import *
 
 class CRUDBuoyDrift(CRUDBase[BuoyDrift]):
     ...
-class CRUDSpotterGeneral(CRUDBase[SpotterGeneral]):
+class CRUDSpotterGeneral(CRUDBase[SpotterGeneralDrift]):
     ...
-class CRUDSpotterSystem(CRUDBase[SpotterSystem]):
+class CRUDSpotterSystem(CRUDBase[SpotterSystemDrift]):
     ...
-class CRUDSpotterWaves(CRUDBase[SpotterWaves]):
+class CRUDSpotterWaves(CRUDBase[SpotterWavesDrift]):
     ...
  
 buoy_drift = CRUDBuoyDrift(BuoyDrift)
-spotter_all = CRUDSpotterGeneral(SpotterGeneral)
-spotter_system = CRUDSpotterSystem(SpotterSystem)
-spotter_waves = CRUDSpotterWaves(SpotterWaves)
+spotter_general = CRUDSpotterGeneral(SpotterGeneralDrift)
+spotter_system = CRUDSpotterSystem(SpotterSystemDrift)
+spotter_waves = CRUDSpotterWaves(SpotterWavesDrift)
