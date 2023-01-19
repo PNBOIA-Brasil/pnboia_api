@@ -1,10 +1,10 @@
 # coding: utf-8
-from pydantic import BaseModel, HttpUrl, validator, Json
+from pydantic import BaseModel, HttpUrl, validator, Json, Field
 import datetime
 from typing import Optional, Any, List
 from geojson_pydantic import Feature, Polygon, Point
 
-from geoalchemy2.shape import to_shape 
+from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
 
 from pnboia_api.models.moored import Buoy
@@ -17,7 +17,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 def ewkb_to_wkt(geom: WKBElement):
     """
-    Converts a geometry formated as WKBE to WKT 
+    Converts a geometry formated as WKBE to WKT
     in order to parse it into pydantic Model
 
     Args:
@@ -76,7 +76,7 @@ class QualifiedDataBase(BaseModel):
     flag_cspd4: Optional[int]
     cdir4: Optional[int]
     flag_cdir4: Optional[int]
-    cspd5: Optional[float]
+    cspd5: Optional[float] #= Field(alias="ADCP5_TEST")
     flag_cspd5: Optional[int]
     cdir5: Optional[int]
     flag_cdir5: Optional[int]
@@ -170,3 +170,4 @@ class QualifiedDataBase(BaseModel):
 
     class Config:
         orm_mode = True
+        #allow_population_by_field_name = True
