@@ -7,7 +7,6 @@ from sqlalchemy.orm.session import Session
 from pnboia_api.schemas.adm import *
 from pnboia_api.models.adm import *
 import pnboia_api.crud as crud
-from  pnboia_api.db.base import Base, engine
 from pnboia_api.app.deps import get_db
 
 from pnboia_api.core.security import credentials_exception

@@ -28,7 +28,7 @@ class CRUDBase(Generic[ModelType]):
         result = db.query(self.model).filter(self.model.buoy_id == id_pk).first()
         if not result:
             raise HTTPException(
-                status_code=404, detail=f"buoy with status {status} not found"
+                status_code=404, detail=f"buoy with buoy_id = {id_pk} not found"
             )
         return result
 

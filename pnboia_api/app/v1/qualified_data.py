@@ -55,7 +55,6 @@ def qualified_data_index(
 
 
     result = crud.crud_qualified_data.qualified_data.index(db=db, arguments=arguments)
-
     
     return result
 
