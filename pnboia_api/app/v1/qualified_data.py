@@ -23,7 +23,7 @@ router = APIRouter()
 # QUALIFIED_DATA.QualifiedData ENDPOINT
 #######################
 
-@router.get("/v3/qualified_data/qualified_data", status_code=200, response_model=List[QualifiedDataBase])
+@router.get("/qualified_data", status_code=200, response_model=List[QualifiedDataBase])
 def qualified_data_index(
         buoy_id: int,
         token: str,
@@ -58,7 +58,7 @@ def qualified_data_index(
     
     return result
 
-@router.get("/v3/qualified_data/qualified_data/last", status_code=200, response_model=List[QualifiedDataBase])
+@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataBase])
 def qualified_data_last(
         token: str,
         db: Session = Depends(get_db),
