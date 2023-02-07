@@ -37,6 +37,6 @@ RUN apt update && apt install -y python3-pip                                \
 
 # Note we use /build/requirements.txt since this is our file
 
-EXPOSE 8001
+EXPOSE 80
 
 # Instruction informs Docker that the container listens on port 80

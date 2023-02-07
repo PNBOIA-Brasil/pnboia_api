@@ -58,3 +58,17 @@ def qualified_data_index(
     
     return result
 
+@router.get("/v3/qualified_data/qualified_data/last", status_code=200, response_model=List[QualifiedDataBase])
+def qualified_data_last(
+        token: str,
+        db: Session = Depends(get_db),
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+
+    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments)
+    
+    return result
+
