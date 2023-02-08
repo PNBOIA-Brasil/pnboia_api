@@ -58,7 +58,7 @@ def qualified_data_index(
     
     return result
 
-@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataBase])
+@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataBuoyBase])
 def qualified_data_last(
         token: str,
         db: Session = Depends(get_db),
