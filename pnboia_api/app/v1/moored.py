@@ -44,7 +44,8 @@ def buoy_show(
 def buoy_index(
         token: str,
         db: Session = Depends(get_db),
-        status:Optional[bool]=None
+        status:Optional[bool]=None,
+        order:Optional[bool]=False,
     ) -> Any:   
 
     """
@@ -58,7 +59,7 @@ def buoy_index(
     else:
         arguments = {}
     
-    result = crud.crud_moored.buoy.index(db=db, arguments=arguments)
+    result = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
     return result
 
