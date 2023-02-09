@@ -26,6 +26,9 @@ def ewkb_to_wkt(geom: WKBElement):
     """
     return to_shape(geom).wkt
 
+
+
+
 class BuoyDriftBase(BaseModel):
     buoy_id: Optional[int]
     hull_id: Optional[int]
@@ -39,6 +42,7 @@ class BuoyDriftBase(BaseModel):
     geom_deploy: Optional[str]
     geom_last_position: Optional[str]
     project_id: Optional[int]
+    antenna_id: Optional[str]
 
     @validator('geom_last_position', pre=True,allow_reuse=True,whole=True, always=True)
     def correct_geom_format(cls, v):
@@ -56,6 +60,18 @@ class BuoyDriftBase(BaseModel):
     class Config:
         orm_mode = True
 
+
+class BuoyDriftNewBase(BaseModel):
+    hull_id: Optional[int]
+    model: Optional[str]
+    latitude_deploy: Optional[float]
+    longitude_deploy: Optional[float]
+    deploy_date: Optional[datetime.date]
+    project_id: Optional[int]
+    antenna_id: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 class SpotterGeneralDriftBase(BaseModel):
     id: Optional[int]

@@ -23,6 +23,7 @@ class BuoyDrift(Base):
     geom_deploy = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude_deploy)::double precision, (latitude_deploy)::double precision), 4326)', persisted=True))
     geom_last_position = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((last_longitude)::double precision, (last_latitude)::double precision), 4326)', persisted=True))
     project_id = Column(SmallInteger, comment='Id do projeto da boia')
+    antenna_id = Column(String(30), nullable=False)
 
 class SpotterGeneralDrift(Base):
     __tablename__ = 'spotter_general'

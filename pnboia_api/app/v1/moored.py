@@ -1,16 +1,11 @@
-import pandas as pd
-import numpy as np
-
 from typing import Optional, Any, List
-
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from pnboia_api.core.security import credentials_exception
 from pnboia_api.schemas.moored import *
 from pnboia_api.models.moored import *
 import pnboia_api.crud as crud
-from  pnboia_api.db.base import Base, SessionLocal, engine
+from  pnboia_api.db.base import Base, engine
 from datetime import datetime, timedelta, date
 
 from pnboia_api.app.deps import get_db
@@ -41,7 +36,7 @@ def buoy_show(
     return result
 
 @router.get("/buoys", status_code=200, response_model=List[BuoyBase])
-def buoy_index(
+def obj_index(
         token: str,
         db: Session = Depends(get_db),
         status:Optional[bool]=None,
@@ -60,6 +55,83 @@ def buoy_index(
         arguments = {}
     
     result = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
+
+    return result
+
+
+@router.post("/buoys", response_model=BuoyBase, status_code=201)
+def buoy_create(
+        token: str,
+        obj_in: BuoyNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    
+    result = crud.crud_moored.buoy.index(db=db, arguments = {'name=': obj_in.name})
+
+    if result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is already a buoy with this name",
+        )
+
+    result = crud.crud_moored.buoy.create(db=db, obj_in=obj_in)
+
+    return result
+
+@router.put("/buoys/{buoy_id}", response_model=BuoyBase, status_code=201)
+def buoy_update(
+        *,
+        buoy_id: int,
+        token: str,
+        obj_in: BuoyNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.buoy.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no buoy with this id",
+        )
+
+    result = crud.crud_moored.buoy.update(db=db, id_pk = buoy_id, obj_in=obj_in)
+
+    return result
+
+@router.delete("/buoys/{buoy_id}", response_model=BuoyBase, status_code=201)
+def buoy_update(
+        *,
+        buoy_id: int,
+        token: str,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.buoy.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no buoy with this id",
+        )
+
+    result = crud.crud_moored.buoy.delete(db=db, id_pk = buoy_id)
 
     return result
 
@@ -235,6 +307,73 @@ def spotter_smart_mooring_config_index(
     print(arguments)
 
     result = crud.crud_moored.spotter_smart_mooring_config.index(db=db, arguments=arguments)
+
+    return result
+
+@router.post("/spotter_smart_mooring_config", response_model=SpotterSmartMooringConfigBase, status_code=201)
+def spotter_smart_mooring_config_create(
+        token: str,
+        obj_in: SpotterSmartMooringConfigNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.spotter_smart_mooring_config.create(db=db, obj_in=obj_in)
+
+    return result
+
+@router.put("/spotter_smart_mooring_config/{id}", response_model=SpotterSmartMooringConfigBase, status_code=201)
+def spotter_smart_mooring_config_update(
+        *,
+        id: int,
+        token: str,
+        obj_in: SpotterSmartMooringConfigNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.spotter_smart_mooring_config.index(db=db, arguments = {'id=': id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no buoy with this id",
+        )
+
+    result = crud.crud_moored.spotter_smart_mooring_config.update(db=db, id_pk = id, obj_in=obj_in)
+
+    return result
+
+@router.delete("/spotter_smart_mooring_config/{id}", response_model=SpotterSmartMooringConfigBase, status_code=201)
+def spotter_smart_mooring_config_update(
+        *,
+        id: int,
+        token: str,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.spotter_smart_mooring_config.index(db=db, arguments = {'id=': id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no smart mooring config with this id",
+        )
+
+    result = crud.crud_moored.spotter_smart_mooring_config.delete(db=db, id_pk = id)
 
     return result
 

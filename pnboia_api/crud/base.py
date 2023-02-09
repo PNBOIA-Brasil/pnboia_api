@@ -42,10 +42,6 @@ class CRUDBase(Generic[ModelType]):
             query = "true"
 
         result = db.query(self.model).filter(text(query)).all()
-        if not result:
-            raise HTTPException(
-                status_code=404, detail=f"{self.model} with {arguments} not found"
-            )
 
         return result
 
@@ -54,9 +50,16 @@ class CRUDBase(Generic[ModelType]):
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)
 
-        max_id = db.query(func.max(self.model.id)).first()
 
-        db_obj.id = max_id[0] + 1
+        if str(self.model) == "<class 'pnboia_api.models.moored.Buoy'>":
+            max_id = db.query(func.max(self.model.buoy_id)).first()
+            db_obj.buoy_id = max_id[0] + 1
+        elif str(self.model) == "<class 'pnboia_api.models.drift.BuoyDrift'>":
+            max_id = db.query(func.max(self.model.buoy_id)).first()
+            db_obj.buoy_id = max_id[0] + 1
+        else:
+            max_id = db.query(func.max(self.model.id)).first()
+            db_obj.id = max_id[0] + 1
 
         db.add(db_obj)
 
@@ -67,7 +70,12 @@ class CRUDBase(Generic[ModelType]):
     def update(self, db: Session, *, id_pk: int, obj_in: Union[ModelType, Dict[str, Any]]
     ) -> ModelType:
     
-        obj_old = db.query(self.model).filter(self.model.id == id_pk).first()
+        if str(self.model) == "<class 'pnboia_api.models.moored.Buoy'>":
+            obj_old = db.query(self.model).filter(self.model.buoy_id == id_pk).first()
+        elif str(self.model) == "<class 'pnboia_api.models.drift.BuoyDrift'>":
+            obj_old = db.query(self.model).filter(self.model.buoy_id == id_pk).first()
+        else:
+            obj_old = db.query(self.model).filter(self.model.id == id_pk).first()
 
         if isinstance(obj_in, dict):
             update_data = obj_in

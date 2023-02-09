@@ -10,3 +10,11 @@ class GeneralBase(BaseModel):
 
     class Config:
         orm_mode = True
+
+class GeneralNewBase(BaseModel):
+
+    buoy_id: Optional[int]
+    qc_config: Optional[dict]
+
+    class Config:
+        orm_mode = True

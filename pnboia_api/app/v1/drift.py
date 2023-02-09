@@ -62,6 +62,84 @@ def buoy_index(
 
 
 
+@router.post("/buoys", response_model=BuoyDriftBase, status_code=201)
+def buoy_create(
+        token: str,
+        buoy_in: BuoyDriftNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    
+    result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'antenna_id=': buoy_in.antenna_id})
+
+    if result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is already a buoy with this name",
+        )
+
+    result = crud.crud_drift.buoy_drift.create(db=db, obj_in=buoy_in)
+
+    return result
+
+@router.put("/buoys/{buoy_id}", response_model=BuoyDriftBase, status_code=201)
+def buoy_update(
+        *,
+        buoy_id: int,
+        token: str,
+        buoy_in: BuoyDriftNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no buoy with this id",
+        )
+
+    result = crud.crud_drift.buoy_drift.update(db=db, id_pk = buoy_id, obj_in=buoy_in)
+
+    return result
+
+@router.delete("/buoys/{buoy_id}", response_model=BuoyDriftBase, status_code=201)
+def buoy_update(
+        *,
+        buoy_id: int,
+        token: str,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create new buoy
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no buoy with this id",
+        )
+
+    result = crud.crud_drift.buoy_drift.delete(db=db, id_pk = buoy_id)
+
+    return result
+
+
+
 #######################
 # DRIFT.spotter_general ENDPOINT
 #######################

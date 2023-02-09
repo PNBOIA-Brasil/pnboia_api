@@ -55,6 +55,25 @@ class BuoyBase(BaseModel):
     class Config:
         orm_mode = True
 
+class BuoyNewBase(BaseModel):
+
+    hull_id: Optional[int]
+    name: Optional[str]
+    deploy_date: Optional[datetime.date]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    status: Optional[bool]
+    mode: Optional[str]
+    wmo_number: Optional[str]
+    antenna_id: Optional[str]
+    open_data: Optional[bool]
+    link_site_pnboia: Optional[str]
+    metarea_section: Optional[str]
+    project_id: Optional[int]
+
+    class Config:
+        orm_mode = True
+
 class AxysAdcpBase(BaseModel):
 
     id: Optional[int]
@@ -328,7 +347,14 @@ class SpotterSmartMooringConfigBase(BaseModel):
     sensor: Optional[str]
     depth: Optional[int]
 
-    # buoy: Optional[Buoy]
+    class Config:
+        orm_mode = True
+
+class SpotterSmartMooringConfigNewBase(BaseModel):
+
+    buoy_id: Optional[int]
+    sensor: Optional[str]
+    depth: Optional[int]
 
     class Config:
         orm_mode = True

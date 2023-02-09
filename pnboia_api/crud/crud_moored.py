@@ -3,6 +3,8 @@ from pnboia_api.models.moored import *
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import func
 
 class CRUDBuoy(CRUDBase[Buoy]):
     def index(
@@ -17,13 +19,9 @@ class CRUDBuoy(CRUDBase[Buoy]):
             result = db.query(self.model).filter(text(query)).order_by(desc(self.model.status)).order_by(self.model.name).all()
         else:
             result = db.query(self.model).filter(text(query)).all()
-
-        if not result:
-            raise HTTPException(
-                status_code=404, detail=f"{self.model} with {arguments} not found"
-            )
-
+        
         return result
+
 class CRUDAxysAdcp(CRUDBase[AxysAdcp]):
     ...
 class CRUDAxysGeneral(CRUDBase[AxysGeneral]):
