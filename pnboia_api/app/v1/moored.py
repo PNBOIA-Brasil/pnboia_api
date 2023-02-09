@@ -345,7 +345,7 @@ def spotter_smart_mooring_config_update(
     if not result:
         raise HTTPException(
             status_code=400,
-            detail="There is no buoy with this id",
+            detail="There is no smart mooring config with this id",
         )
 
     result = crud.crud_moored.spotter_smart_mooring_config.update(db=db, id_pk = id, obj_in=obj_in)

@@ -33,15 +33,18 @@ class CRUDBase(Generic[ModelType]):
         return result
 
     def index(
-        self, db: Session, *, skip: int = 0, limit: int = 100, arguments: dict = None
+        self, db: Session, *, skip: int = 0, limit: int = None, arguments: dict = None
     ) -> List[ModelType]:
 
         if arguments:
             query = self.create_query(arguments)
         else:
             query = "true"
-
-        result = db.query(self.model).filter(text(query)).all()
+        
+        if limit:
+            result = db.query(self.model).filter(text(query)).limit(limit).all()
+        else:
+            result = db.query(self.model).filter(text(query)).all()
 
         return result
 

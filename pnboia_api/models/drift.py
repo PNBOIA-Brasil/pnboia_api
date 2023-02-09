@@ -31,21 +31,21 @@ class SpotterGeneralDrift(Base):
 
     id = Column(SmallInteger, primary_key=True, comment='Id da boia.')
     buoy_id = Column(ForeignKey(BuoyDrift.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID da boia.')
-    wspd1 = Column(Text)
-    wdir1 = Column(Text)
-    latitude = Column(Text)
-    longitude = Column(Text)
+    wspd1 = Column(Numeric)
+    wdir1 = Column(Numeric)
+    latitude = Column(Numeric)
+    longitude = Column(Numeric)
     date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado. Dado retirado da string e transformado em TIMESTAMP horário ZULU.')
-    swvht1 = Column(Text)
-    tp1 = Column(Text)
-    tm1 = Column(Text)
-    pkdir1 = Column(Text)
-    pkspread1 = Column(Text)
-    wvdir1 = Column(Text)
-    wvspread1 = Column(Text)
+    swvht1 = Column(Numeric)
+    tp1 = Column(Numeric)
+    tm1 = Column(Numeric)
+    pkdir1 = Column(Numeric)
+    pkspread1 = Column(Numeric)
+    wvdir1 = Column(Numeric)
+    wvspread1 = Column(Numeric)
     sst = Column(Numeric)
 
-
+    
     buoy = relationship(BuoyDrift, foreign_keys=[buoy_id])
 
 
