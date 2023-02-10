@@ -134,6 +134,8 @@ def buoy_update(
             detail="There is no buoy with this id",
         )
 
+
+
     result = crud.crud_drift.buoy_drift.delete(db=db, id_pk = buoy_id)
 
     return result
