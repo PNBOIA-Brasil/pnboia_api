@@ -134,7 +134,9 @@ def qualified_data_index(
         result_dict = result_df.to_dict(orient='records')
         for idx, r in enumerate(result):
             for key,value in result_dict[idx].items():
-                setattr(result[idx],key,value)
+                if value == np.nan:
+                    delattr(result[idx],key)
+                    delattr(result[idx],f"flag_{key}")
 
     result1 = []
     for r in result:

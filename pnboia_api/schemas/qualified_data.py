@@ -349,13 +349,6 @@ class QualifiedDataBase(BaseModel):
             # raise ValueError('must be a valid WKBE element')
         return ewkb_to_wkt(v)
 
-    # @validator('wdir1','wdir2','cdir1','cdir2','cdir3','cdir4','cdir5','cdir6','cdir7','cdir8','cdir9','cdir10','cdir11','cdir12','cdir13','cdir14','cdir15','cdir16','cdir17','cdir18','wvdir1','wvspread1','wvdir2', pre=True)
-    # def allow_none(cls, v):
-    #     if np.isnan(v):
-    #          return None
-    #     else:
-    #         return v
-
     class Config:
         orm_mode = True
 
@@ -505,13 +498,6 @@ class QualifiedDataBuoyBase(BaseModel):
             return None
             # raise ValueError('must be a valid WKBE element')
         return ewkb_to_wkt(v)
-
-    @validator('wdir1','wdir2','cdir1','cdir2','cdir3','cdir4','cdir5','cdir6','cdir7','cdir8','cdir9','cdir10','cdir11','cdir12','cdir13','cdir14','cdir15','cdir16','cdir17','cdir18','wvdir1','wvspread1','wvdir2', pre=True)
-    def allow_none(cls, v):
-        if np.isnan(v):
-             return None
-        else:
-            return v
 
     class Config:
         orm_mode = True
