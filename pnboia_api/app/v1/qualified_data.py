@@ -33,6 +33,7 @@ def qualified_data_index(
             title="date_time format is yyyy-mm-dd",
             regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
         db: Session = Depends(get_db),
+        flag: str = None,
         limit: int = None,
     ) -> Any:
 
@@ -51,9 +52,30 @@ def qualified_data_index(
         
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
-
     result = crud.crud_qualified_data.qualified_data.index(db=db, arguments=arguments, limit=limit)
-    
+
+    if flag:
+        result_dict = []
+        for r in result:
+            result_dict.append(vars(r))
+        result_df = pd.DataFrame(result_dict)
+        column_flag = []
+        for column in result_df.columns:
+            if column[0:4] == "flag":
+                column_flag.append(column.split("_")[1])
+        for c in column_flag:
+            if c not in ['latitude', 'longitude']:
+                if flag == 'all':
+                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
+                elif flag == 'soft':
+                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
+        result_dict = result_df.to_dict(orient='records')
+        for idx, r in enumerate(result):
+            for key,value in result_dict[idx].items():
+                if value == np.nan:
+                    delattr(result[idx],key)
+                    delattr(result[idx],f"flag_{key}")
+
     return result
 
 @router.get("/qualified_data/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
@@ -86,12 +108,33 @@ def qualified_data_index(
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     result = crud.crud_qualified_data.qualified_data.index(db=db, arguments=arguments, limit=limit)
-    
+
     if not result:
         raise HTTPException(
             status_code=400,
             detail=f"Não há dados desde {round((datetime.utcnow() - timedelta(hours=3)).timestamp())*1000}"
         )
+
+
+    if flag:
+        result_dict = []
+        for r in result:
+            result_dict.append(vars(r))
+        result_df = pd.DataFrame(result_dict)
+        column_flag = []
+        for column in result_df.columns:
+            if column[0:4] == "flag":
+                column_flag.append(column.split("_")[1])
+        for c in column_flag:
+            if c not in ['latitude', 'longitude']:
+                if flag == 'all':
+                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
+                elif flag == 'soft':
+                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
+        result_dict = result_df.to_dict(orient='records')
+        for idx, r in enumerate(result):
+            for key,value in result_dict[idx].items():
+                setattr(result[idx],key,value)
 
     result1 = []
     for r in result:
