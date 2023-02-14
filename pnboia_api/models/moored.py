@@ -379,3 +379,19 @@ class TriaxysStatus(Base):
     terminal_cnr = Column(Numeric)
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+class Alert(Base):
+    __tablename__ = 'alerts'
+    __table_args__ = {'schema': 'moored'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.alerts_id_seq'::regclass)"))
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID da boia.')
+    position = Column(Integer)
+    transmission = Column(Integer)
+    transmission_gap = Column(Integer)
+    high_values = Column(JSON)
+    sensor_fail = Column(JSON)
+    low_values = Column(JSON)
+    email = Column(String)
+
+    buoy = relationship(Buoy, foreign_keys=[buoy_id])

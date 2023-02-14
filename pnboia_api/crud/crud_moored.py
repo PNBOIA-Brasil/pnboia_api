@@ -47,6 +47,8 @@ class CRUDTriaxysRaw(CRUDBase[TriaxysRaw]):
 class CRUDTriaxysStatus(CRUDBase[TriaxysStatus]):
     ...
 
+class CRUDAlert(CRUDBase[Alert]):
+    ...
 
 buoy = CRUDBuoy(Buoy)
 axys_adcp = CRUDAxysAdcp(AxysAdcp)
@@ -61,3 +63,4 @@ spotter_system = CRUDSpotterSystem(SpotterSystem)
 triaxys_general = CRUDTriaxysGeneral(TriaxysGeneral)
 triaxys_raw = CRUDTriaxysRaw(TriaxysRaw)
 triaxys_status = CRUDTriaxysStatus(TriaxysStatus)
+alert = CRUDAlert(Alert)

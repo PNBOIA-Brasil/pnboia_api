@@ -476,3 +476,32 @@ class TriaxysStatusBase(BaseModel):
     # buoy: Optional[Buoy]
     class Config:
         orm_mode = True
+
+class AlertBase(BaseModel):
+
+    id: Optional[int]
+    buoy_id: Optional[int]
+    position: Optional[float]
+    transmission: Optional[float]
+    transmission_gap: Optional[float]
+    high_values: Optional[dict]
+    sensor_fail: Optional[dict]
+    low_values: Optional[dict]
+    email: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+class AlertNewBase(BaseModel):
+
+    buoy_id: Optional[int]
+    position: Optional[float]
+    transmission: Optional[float]
+    transmission_gap: Optional[float]
+    high_values: Optional[dict]
+    sensor_fail: Optional[dict]
+    low_values: Optional[dict]
+    email: Optional[str]
+
+    class Config:
+        orm_mode = True

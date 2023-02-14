@@ -454,3 +454,112 @@ def bmobr_general_index(
 
     return result
 
+#######################
+# MOORED.ALERTS ENDPOINT
+#######################
+
+@router.get("/alerts", status_code=200, response_model=List[AlertBase])
+def obj_index(
+        token: str,
+        db: Session = Depends(get_db),
+        buoy_id:Optional[int] = None
+    ) -> Any:   
+
+    """
+    Fetch a single alert by buoy_id
+    """
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    if buoy_id != None:
+        arguments = {'buoy_id=': buoy_id}
+    else:
+        arguments = {}
+    
+    result = crud.crud_moored.alert.index(db=db, arguments=arguments)
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is not a alert for this buoy",
+        )
+
+    return result
+
+
+
+@router.post("/alerts", response_model=AlertBase, status_code=201)
+def buoy_create(
+        token: str,
+        obj_in: AlertNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Create a new alert
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    
+    result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': obj_in.buoy_id})
+
+    if result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is already a alert for this buoy",
+        )
+
+    result = crud.crud_moored.alert.create(db=db, obj_in=obj_in)
+
+    return result
+
+@router.put("/alerts/{buoy_id}", response_model=AlertBase, status_code=201)
+def buoy_update(
+        *,
+        token: str,
+        buoy_id: int,
+        obj_in: AlertNewBase,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Update an alert
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no alert for this buoy",
+        )
+    
+    result = crud.crud_moored.alert.update(db=db, id_pk = result[0].id, obj_in=obj_in)
+
+    return result
+
+@router.delete("/alerts/{buoy_id}", response_model=AlertBase, status_code=201)
+def buoy_update(
+        *,
+        token: str,
+        buoy_id: int,
+        db: Session = Depends(get_db)
+    ) -> Any:
+    """
+    Delete an alert
+    """
+    
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': buoy_id})
+
+    if not result:
+        raise HTTPException(
+            status_code=400,
+            detail="There is no alert for this buoy",
+        )
+
+    result = crud.crud_moored.alert.delete(db=db, id_pk = result[0].id)
+
+    return result
