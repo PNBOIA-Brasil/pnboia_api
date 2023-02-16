@@ -41,11 +41,9 @@ def qualified_data_index(
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
-    start_date = datetime.strptime(start_date, "%Y-%m-%d")
-    end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-    if start_date > datetime.utcnow():
-        start_date = (datetime.utcnow() - timedelta(days=3))
+    if start_date > date.today():
+        start_date = (date.today() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
