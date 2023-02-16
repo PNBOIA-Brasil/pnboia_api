@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy import func
+from sqlalchemy import desc
 
 from pnboia_api.db.base import Base
 
@@ -33,7 +34,7 @@ class CRUDBase(Generic[ModelType]):
         return result
 
     def index(
-        self, db: Session, *, skip: int = 0, limit: int = None, arguments: dict = None
+        self, db: Session, *, skip: int = 0, order:bool = False,limit: int = None, arguments: dict = None
     ) -> List[ModelType]:
 
         if arguments:
@@ -42,7 +43,12 @@ class CRUDBase(Generic[ModelType]):
             query = "true"
         
         if limit:
-            result = db.query(self.model).filter(text(query)).limit(limit).all()
+            if order:
+                result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).limit(limit).all()          
+            else:
+                result = db.query(self.model).filter(text(query)).limit(limit).all()
+        elif order:
+            result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).all()          
         else:
             result = db.query(self.model).filter(text(query)).all()
 

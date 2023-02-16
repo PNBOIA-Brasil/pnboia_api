@@ -35,6 +35,7 @@ def qualified_data_index(
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
+        order:Optional[bool]=False
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -52,7 +53,7 @@ def qualified_data_index(
         
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
-    result = crud.crud_qualified_data.qualified_data.index(db=db, arguments=arguments, limit=limit)
+    result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
 
     if flag:
         result_dict = []
@@ -90,6 +91,7 @@ def qualified_data_index(
             regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        order:Optional[bool]=False
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -107,7 +109,7 @@ def qualified_data_index(
         
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
-    result = crud.crud_qualified_data.qualified_data.index(db=db, arguments=arguments, limit=limit)
+    result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -307,13 +309,13 @@ def qualified_data_index(
 def qualified_data_last(
         token: str,
         db: Session = Depends(get_db),
+        last: bool = True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
 
-    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments)
+    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
     
     return result
-

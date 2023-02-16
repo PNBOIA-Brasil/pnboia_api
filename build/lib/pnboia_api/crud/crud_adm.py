@@ -14,7 +14,6 @@ class CRUDUser(CRUDBase[User]):
         create_data = obj_in.dict()
         db_obj = User(**create_data)
         db_obj.password = get_password_hash(obj_in.password)
-        db_obj.token = create_token(20)
 
         db.add(db_obj)
         db.commit()
