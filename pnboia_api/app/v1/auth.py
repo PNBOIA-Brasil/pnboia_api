@@ -9,12 +9,40 @@ from pnboia_api.models.adm import *
 import pnboia_api.crud as crud
 from pnboia_api.app.deps import get_db
 
-from pnboia_api.core.security import credentials_exception
+from pnboia_api.core.security import credentials_exception, create_token
 
 router = APIRouter()
 
-@router.get("/me", response_model=UserShowBase)
+@router.get("/", response_model=UserShowBase)
 def show_user(
+        email: str,
+        db: Session = Depends(get_db),
+        token: str = None
+    ) -> Any:   
+
+    """
+    Fetch a single buoy by ID
+    """
+    if token == None:
+        raise credentials_exception
+
+    user = crud.crud_adm.user.verify(db=db, raise_error=False, arguments={'token=': token})
+
+    if user.user_type != 'admin':
+        raise credentials_exception
+    
+    user = crud.crud_adm.user.verify(db=db, raise_error=False, arguments = {'email=': email})
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="No user with this email",
+        )
+
+    return user
+
+@router.get("/me", response_model=UserShowBase)
+def me(
         db: Session = Depends(get_db),
         token: str = None,
     ) -> Any:   
@@ -68,7 +96,8 @@ def update_user(
         *,
         token: str,
         db: Session = Depends(get_db),
-        user_in: UserUpdateBase
+        update_token: bool =False,
+        user_in: UserCreateBase
     ) -> Any:
     """
     Create new user without the need to be logged in.
@@ -87,12 +116,11 @@ def update_user(
     user = crud.crud_adm.user.verify(db=db, raise_error=False, arguments=arguments)
 
     if not user:
-        raise HTTPException(
-            status_code=400,
-            detail="There is no user with token",
-        )
-
-    user = crud.crud_adm.user.update(db=db, id_pk = user.id, obj_in=user_in)
+        user_in.password = create_token(10)
+        user_in.username = user_in.email
+        user = crud.crud_adm.user.create(db=db, obj_in=user_in)
+    else:
+        user = crud.crud_adm.user.update(db=db, id_pk = user.id, update_token=update_token, obj_in=user_in)
 
     return user
 

@@ -74,6 +74,11 @@ def buoy_create(
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     
     result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'antenna_id=': buoy_in.antenna_id})
 
@@ -101,6 +106,11 @@ def buoy_update(
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'buoy_id=': buoy_id})
 
     if not result:
@@ -126,6 +136,11 @@ def buoy_update(
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     result = crud.crud_drift.buoy_drift.index(db=db, arguments = {'buoy_id=': buoy_id})
 
     if not result:

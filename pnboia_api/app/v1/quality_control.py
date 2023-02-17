@@ -63,6 +63,12 @@ def general_create(
             detail="There is already a qc_config for this buoy",
         )
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
     result = crud.crud_quality_control.general.create(db=db, obj_in=obj_in)
 
     return result
@@ -89,6 +95,12 @@ def general_update(
             detail="There is no qc_config for this buoy",
         )
     
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
     result = crud.crud_quality_control.general.update(db=db, id_pk = result[0].id, obj_in=obj_in)
 
     return result
@@ -113,6 +125,13 @@ def buoy_update(
             status_code=400,
             detail="There is no qc_config for this buoy",
         )
+
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
 
     result = crud.crud_quality_control.general.delete(db=db, id_pk = result[0].id)
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy import func
 from sqlalchemy import desc
-
+from pnboia_api.core.security import create_token
 from pnboia_api.db.base import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -76,7 +76,7 @@ class CRUDBase(Generic[ModelType]):
         db.refresh(db_obj)
         return db_obj
 
-    def update(self, db: Session, *, id_pk: int, obj_in: Union[ModelType, Dict[str, Any]]
+    def update(self, db: Session, *, id_pk: int, update_token=False, obj_in: Union[ModelType, Dict[str, Any]]
     ) -> ModelType:
     
         if str(self.model) == "<class 'pnboia_api.models.moored.Buoy'>":
@@ -94,6 +94,10 @@ class CRUDBase(Generic[ModelType]):
         for field in vars(obj_old).keys():
             if field in update_data:
                 setattr(obj_old, field, update_data[field])
+
+        if update_token:
+            obj_old.token = create_token(20)
+
         db.add(obj_old)
         db.commit()
         db.refresh(obj_old)

@@ -80,6 +80,13 @@ def buoy_create(
             detail="There is already a buoy with this name",
         )
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
+
     result = crud.crud_moored.buoy.create(db=db, obj_in=obj_in)
 
     return result
@@ -106,6 +113,12 @@ def buoy_update(
             detail="There is no buoy with this id",
         )
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
     result = crud.crud_moored.buoy.update(db=db, id_pk = buoy_id, obj_in=obj_in)
 
     return result
@@ -130,6 +143,13 @@ def buoy_update(
             status_code=400,
             detail="There is no buoy with this id",
         )
+
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
 
     result = crud.crud_moored.buoy.delete(db=db, id_pk = buoy_id)
 
@@ -322,6 +342,12 @@ def spotter_smart_mooring_config_create(
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
+
     result = crud.crud_moored.spotter_smart_mooring_config.create(db=db, obj_in=obj_in)
 
     return result
@@ -339,6 +365,12 @@ def spotter_smart_mooring_config_update(
     """
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
 
     result = crud.crud_moored.spotter_smart_mooring_config.index(db=db, arguments = {'id=': id})
 
@@ -364,6 +396,12 @@ def spotter_smart_mooring_config_update(
     """
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
 
     result = crud.crud_moored.spotter_smart_mooring_config.index(db=db, arguments = {'id=': id})
 
@@ -500,6 +538,11 @@ def buoy_create(
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     
     result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': obj_in.buoy_id})
 
@@ -508,6 +551,7 @@ def buoy_create(
             status_code=400,
             detail="There is already a alert for this buoy",
         )
+
 
     result = crud.crud_moored.alert.create(db=db, obj_in=obj_in)
 
@@ -526,7 +570,11 @@ def buoy_update(
     """
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
-
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': buoy_id})
 
     if not result:
@@ -551,7 +599,11 @@ def buoy_update(
     """
     
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
-
+    if not user.user_type == 'admin':
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to do this action",
+        )
     result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': buoy_id})
 
     if not result:

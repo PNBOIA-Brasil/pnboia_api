@@ -35,23 +35,43 @@ def qualified_data_index(
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
-        order:Optional[bool]=False
+        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
+    try:
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    except:
+        start_date = datetime.combine(start_date, datetime.min.time())
+        end_date = datetime.combine(end_date, datetime.min.time())
 
-    if start_date > date.today():
-        start_date = (date.today() - timedelta(days=3))
+    if start_date > datetime.utcnow():
+        start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 10:
-        start_date = (end_date - timedelta(days=10))
+    if (end_date - start_date).days > 100:
+        start_date = (end_date - timedelta(days=100))
         
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
-    result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
 
     if flag:
         result_dict = []
@@ -89,7 +109,7 @@ def qualified_data_index(
             regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
-        order:Optional[bool]=False
+        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -107,7 +127,20 @@ def qualified_data_index(
         
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
-    result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -307,12 +340,16 @@ def qualified_data_index(
 def qualified_data_last(
         token: str,
         db: Session = Depends(get_db),
-        last: bool = True
+        last: bool = True,
+        open_data: bool = False
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
+
+    if open_data:
+        arguments['open_data='] = True
 
     result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
     
