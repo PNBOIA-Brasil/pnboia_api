@@ -54,7 +54,7 @@ def qualified_data_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 100:
         start_date = (end_date - timedelta(days=100))
-        
+
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
@@ -108,6 +108,7 @@ def qualified_data_index(
             title="date_time format is yyyy-mm-ddTHH:MM:SS",
             regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
+        flag: str = None,
         limit: int = None,
         order:Optional[bool]=True
     ) -> Any:
@@ -124,8 +125,8 @@ def qualified_data_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
-    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
+
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
 
@@ -183,7 +184,7 @@ def qualified_data_index(
         r1.HMS_WIND_SPEED2 = r.wspd2
         r1.flag_HMS_WIND_SPEED2 = r.flag_wspd2
         r1.HMS_WIND_DIRECTION2 = r.wdir2
-        r1.flag_HMS_WIND_DIRECTION2 = r.flag_wdir2        
+        r1.flag_HMS_WIND_DIRECTION2 = r.flag_wdir2
         r1.TEMPERATURA_AGUA = r.sst
         r1.flag_TEMPERATURA_AGUA = r.flag_sst
         r1.ADCP_BIN1_SPEED = r.cspd1
@@ -352,5 +353,5 @@ def qualified_data_last(
         arguments['open_data='] = True
 
     result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
-    
+
     return result
