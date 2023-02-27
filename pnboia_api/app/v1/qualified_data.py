@@ -177,6 +177,10 @@ def qualified_data_index(
         r1 =  QualifiedDataPetrobrasBase()
         r1.HMS_HUMIDITY = r.rh
         r1.flag_HMS_HUMIDITY = r.flag_rh
+        r1.HMS_PRESSURE = r.pres
+        r1.flag_HMS_PRESSURE = r.flag_pres
+        r1.HMS_TEMPERATURE = r.atmp
+        r1.flag_HMS_TEMPERATURE = r.flag_atmp
         r1.HMS_WIND_SPEED1 = r.wspd1
         r1.flag_HMS_WIND_SPEED1 = r.flag_wspd1
         r1.HMS_WIND_DIRECTION1 = r.wdir1
