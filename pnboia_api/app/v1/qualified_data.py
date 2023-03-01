@@ -97,6 +97,8 @@ def qualified_data_index(
 
     return result
 
+
+
 @router.get("/qualified_data/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_index(
         buoy_id: int,
