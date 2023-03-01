@@ -4,7 +4,7 @@ import datetime
 from typing import Optional, Any, List
 from geojson_pydantic import Feature, Polygon, Point
 
-from geoalchemy2.shape import to_shape 
+from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
 
 from pnboia_api.models.moored import Buoy
@@ -20,7 +20,7 @@ import numpy as np
 
 def ewkb_to_wkt(geom: WKBElement):
     """
-    Converts a geometry formated as WKBE to WKT 
+    Converts a geometry formated as WKBE to WKT
     in order to parse it into pydantic Model
 
     Args:
@@ -31,7 +31,7 @@ def ewkb_to_wkt(geom: WKBElement):
 class QualifiedDataPetrobrasBase(BaseModel):
 
     id: Optional[int] = None
-    raw_id: Optional[int] = None
+    # raw_id: Optional[int] = None
     buoy_id: Optional[int] = None
     date_time: Optional[datetime.datetime] = None
     Timestamp: Optional[int] = None
@@ -50,18 +50,18 @@ class QualifiedDataPetrobrasBase(BaseModel):
     flag_HMS_WIND_SPEED2: Optional[int] = None
     HMS_WIND_DIRECTION2: Optional[int] = None
     flag_HMS_WIND_DIRECTION2: Optional[int] = None
-    gust1: Optional[float] = None
-    flag_gust1: Optional[int] = None
-    gust2: Optional[float] = None
-    flag_gust2: Optional[int] = None
+    # gust1: Optional[float] = None
+    # flag_gust1: Optional[int] = None
+    # gust2: Optional[float] = None
+    # flag_gust2: Optional[int] = None
     HMS_TEMPERATURE: Optional[float] = None
     flag_HMS_TEMPERATURE: Optional[int] = None
     HMS_PRESSURE: Optional[float] = None
     flag_HMS_PRESSURE: Optional[int] = None
-    srad: Optional[float] = None
-    flag_srad: Optional[int] = None
-    dewpt: Optional[float] = None
-    flag_dewpt: Optional[int] = None
+    # srad: Optional[float] = None
+    # flag_srad: Optional[int] = None
+    # dewpt: Optional[float] = None
+    # flag_dewpt: Optional[int] = None
     TEMPERATURA_AGUA: Optional[float] = None
     flag_TEMPERATURA_AGUA: Optional[int] = None
     ADCP_BIN1_SPEED: Optional[float] = None
@@ -168,31 +168,31 @@ class QualifiedDataPetrobrasBase(BaseModel):
     flag_ONDA_ALTURA_SENSOR1: Optional[int] = None
     ONDA_PERIODO_SENSOR1: Optional[float] = None
     flag_ONDA_PERIODO_SENSOR1: Optional[int] = None
-    mxwvht1: Optional[float] = None
-    flag_mxwvht1: Optional[int] = None
+    # mxwvht1: Optional[float] = None
+    # flag_mxwvht1: Optional[int] = None
     ONDA_DIRECAOMED_SENSOR1: Optional[int] = None
     flag_ONDA_DIRECAOMED_SENSOR1: Optional[int] = None
-    wvspread1: Optional[int] = None
-    flag_wvspread1: Optional[int] = None
+    # wvspread1: Optional[int] = None
+    # flag_wvspread1: Optional[int] = None
     ONDA_ALTURA_SENSOR2: Optional[float] = None
     flag_ONDA_ALTURA_SENSOR2: Optional[int] = None
     ONDA_PERIODO_SENSOR2: Optional[float] = None
     flag_ONDA_PERIODO_SENSOR2: Optional[int] = None
     ONDA_DIRECAOMED_SENSOR2: Optional[int] = None
     flag_ONDA_DIRECAOMED_SENSOR2: Optional[int] = None
-    tm1: Optional[float] = None
-    flag_tm1: Optional[int] = None
-    pkdir1: Optional[float] = None
-    flag_pkdir1: Optional[int] = None
-    pkspread1: Optional[float] = None
-    flag_pkspread1: Optional[int] = None
-    sensors_data_flagged: Optional[dict] = None
-    cond: Optional[float] = None
-    flag_cond: Optional[int] = None
-    sss: Optional[float] = None
-    flag_sss: Optional[int] = None
-    flag_latitude: Optional[float] = None
-    flag_longitude: Optional[float] = None
+    # tm1: Optional[float] = None
+    # flag_tm1: Optional[int] = None
+    # pkdir1: Optional[float] = None
+    # flag_pkdir1: Optional[int] = None
+    # pkspread1: Optional[float] = None
+    # flag_pkspread1: Optional[int] = None
+    # sensors_data_flagged: Optional[dict] = None
+    # cond: Optional[float] = None
+    # flag_cond: Optional[int] = None
+    # sss: Optional[float] = None
+    # flag_sss: Optional[int] = None
+    # flag_latitude: Optional[float] = None
+    # flag_longitude: Optional[float] = None
 
     @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
     def correct_geom_format(cls, v):
@@ -517,5 +517,3 @@ class QualifiedDataBuoyBase(BaseModel):
 
     class Config:
         orm_mode = True
-
-

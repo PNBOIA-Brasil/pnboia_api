@@ -104,7 +104,7 @@ def qualified_data_index(
         start_date: Optional[str] = Query(default=(datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
             title="date_time format is yyyy-mm-ddTHH:MM:SS",
             regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
-        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
             title="date_time format is yyyy-mm-ddTHH:MM:SS",
             regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
@@ -297,45 +297,45 @@ def qualified_data_index(
         r1.flag_ONDA_PERIODO_SENSOR1 = r.flag_tp1
         r1.ONDA_DIRECAOMED_SENSOR1 = r.wvdir1
         r1.flag_ONDA_DIRECAOMED_SENSOR1 = r.flag_wvdir1
-        r1.ONDA_ALTURA_SENSOR2 = r.swvht1
+        r1.ONDA_ALTURA_SENSOR2 = r.swvht2
         r1.flag_ONDA_ALTURA_SENSOR2 = r.flag_swvht2
         r1.ONDA_PERIODO_SENSOR2 = r.tp2
         r1.flag_ONDA_PERIODO_SENSOR2 = r.flag_tp2
         r1.ONDA_DIRECAOMED_SENSOR2 = r.wvdir2
         r1.flag_ONDA_DIRECAOMED_SENSOR2 = r.flag_wvdir2
         r1.Timestamp = int(r.date_time.timestamp()*1000)
-        r1.id = r.id
-        r1.raw_id = r.raw_id
+        # r1.id = r.id
+        # r1.raw_id = r.raw_id
         r1.buoy_id = r.buoy_id
         r1.date_time = r.date_time
         r1.latitude = r.latitude
         r1.longitude = r.longitude
-        r1.geom = r.geom
+        # r1.geom = r.geom
         r1.battery = r.battery
         r1.flag_battery = r.flag_battery
-        r1.gust1 = r.gust1
-        r1.flag_gust1 = r.flag_gust1
-        r1.gust2 = r.gust2
-        r1.flag_gust2 = r.flag_gust2
-        r1.srad = r.srad
-        r1.flag_srad = r.flag_srad
-        r1.dewpt = r.dewpt
-        r1.flag_dewpt = r.flag_dewpt
-        r1.mxwvht1 = r.mxwvht1
-        r1.flag_mxwvht1 = r.flag_mxwvht1
-        r1.wvspread1 = r.wvspread1
-        r1.flag_wvspread1 = r.flag_wvspread1
-        r1.tm1 = r.tm1
-        r1.flag_tm1 = r.flag_tm1
-        r1.pkdir1 = r.pkdir1
-        r1.flag_pkdir1 = r.flag_pkdir1
-        r1.pkspread1 = r.pkspread1
-        r1.flag_pkspread1 = r.flag_pkspread1
-        r1.sensors_data_flagged = r.sensors_data_flagged
-        r1.cond = r.cond
-        r1.flag_cond = r.flag_cond
-        r1.sss = r.sss
-        r1.flag_sss = r.flag_sss
+        # r1.gust1 = r.gust1
+        # r1.flag_gust1 = r.flag_gust1
+        # r1.gust2 = r.gust2
+        # r1.flag_gust2 = r.flag_gust2
+        # r1.srad = r.srad
+        # r1.flag_srad = r.flag_srad
+        # r1.dewpt = r.dewpt
+        # r1.flag_dewpt = r.flag_dewpt
+        # r1.mxwvht1 = r.mxwvht1
+        # r1.flag_mxwvht1 = r.flag_mxwvht1
+        # r1.wvspread1 = r.wvspread1
+        # r1.flag_wvspread1 = r.flag_wvspread1
+        # r1.tm1 = r.tm1
+        # r1.flag_tm1 = r.flag_tm1
+        # r1.pkdir1 = r.pkdir1
+        # r1.flag_pkdir1 = r.flag_pkdir1
+        # r1.pkspread1 = r.pkspread1
+        # r1.flag_pkspread1 = r.flag_pkspread1
+        # r1.sensors_data_flagged = r.sensors_data_flagged
+        # r1.cond = r.cond
+        # r1.flag_cond = r.flag_cond
+        # r1.sss = r.sss
+        # r1.flag_sss = r.flag_sss
 
         result1.append(r1)
 
