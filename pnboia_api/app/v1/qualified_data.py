@@ -6,6 +6,8 @@ from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from pnboia_api.schemas.qualified_data import *
+from pnboia_api.schemas.qualified_data import QualifiedDataPetrobrasBase
+
 from pnboia_api.models.qualified_data import *
 import pnboia_api.crud as crud
 from  pnboia_api.db.base import Base, engine
