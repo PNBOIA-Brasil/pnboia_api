@@ -17,7 +17,6 @@ Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
 
-
 #######################
 # QUALIFIED_DATA.QualifiedData ENDPOINT
 #######################
