@@ -170,7 +170,6 @@ def qualified_data_index(
                 if value == np.nan:
                     delattr(result[idx],key)
                     delattr(result[idx],f"flag_{key}")
-
     result1 = []
     for r in result:
         r1 =  QualifiedDataPetrobrasBase()
