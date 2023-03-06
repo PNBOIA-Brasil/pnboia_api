@@ -129,6 +129,9 @@ def qualified_data_index(
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
 
+    print(start_date)
+    print(end_date)
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
