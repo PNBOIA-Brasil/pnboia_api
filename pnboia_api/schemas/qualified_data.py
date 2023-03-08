@@ -37,7 +37,7 @@ class QualifiedDataPetrobrasBase(BaseModel):
     Timestamp: Optional[int] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    geom: Optional[str] = None
+    # geom: Optional[str] = None
     battery: Optional[float] = None
     flag_battery: Optional[int] = None
     HMS_HUMIDITY: Optional[float] = None
@@ -194,12 +194,12 @@ class QualifiedDataPetrobrasBase(BaseModel):
     # flag_latitude: Optional[float] = None
     # flag_longitude: Optional[float] = None
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
-    def correct_geom_format(cls, v):
-        if not isinstance(v, WKBElement):
-            return None
-            # raise ValueError('must be a valid WKBE element')
-        return ewkb_to_wkt(v)
+    # @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    # def correct_geom_format(cls, v):
+    #     if not isinstance(v, WKBElement):
+    #         return None
+    #         # raise ValueError('must be a valid WKBE element')
+    #     return ewkb_to_wkt(v)
 
 
     class Config:

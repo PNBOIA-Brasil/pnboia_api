@@ -101,7 +101,7 @@ def qualified_data_index(
     return result
 
 
-@router.get("/qualified_data_petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
+@router.get("/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_index(
         buoy_id: int,
         token: str,
@@ -306,7 +306,7 @@ def qualified_data_index(
         r1.ONDA_DIRECAOMED_SENSOR2 = r.wvdir2
         r1.flag_ONDA_DIRECAOMED_SENSOR2 = r.flag_wvdir2
         r1.Timestamp = int(r.date_time.timestamp()*1000)
-        # r1.id = r.id
+        r1.id = r.id
         # r1.raw_id = r.raw_id
         r1.buoy_id = r.buoy_id
         r1.date_time = r.date_time
