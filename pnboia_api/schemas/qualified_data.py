@@ -58,10 +58,10 @@ class QualifiedDataPetrobrasBase(BaseModel):
     flag_HMS_TEMPERATURE: Optional[int] = None
     HMS_PRESSURE: Optional[float] = None
     flag_HMS_PRESSURE: Optional[int] = None
-    srad: Optional[float] = None
-    flag_srad: Optional[int] = None
-    dewpt: Optional[float] = None
-    flag_dewpt: Optional[int] = None
+    # srad: Optional[float] = None
+    # flag_srad: Optional[int] = None
+    # dewpt: Optional[float] = None
+    # flag_dewpt: Optional[int] = None
     TEMPERATURA_AGUA: Optional[float] = None
     flag_TEMPERATURA_AGUA: Optional[int] = None
     ADCP_BIN1_SPEED: Optional[float] = None

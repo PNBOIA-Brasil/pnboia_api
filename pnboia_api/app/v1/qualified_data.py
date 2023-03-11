@@ -512,10 +512,10 @@ def qualified_data_last(
         r1.flag_HMS_WIND_RAJADA1 = r.flag_gust1
         r1.HMS_WIND_RAJADA2 = r.gust2
         r1.flag_HMS_WIND_RAJADA2 = r.flag_gust2
-        r1.srad = r.srad
-        r1.flag_srad = r.flag_srad
-        r1.dewpt = r.dewpt
-        r1.flag_dewpt = r.flag_dewpt
+        # r1.srad = r.srad
+        # r1.flag_srad = r.flag_srad
+        # r1.dewpt = r.dewpt
+        # r1.flag_dewpt = r.flag_dewpt
         r1.ONDA_ALTURAMAX_SENSOR1 = r.mxwvht1
         r1.flag_ONDA_ALTURAMAX_SENSOR1 = r.flag_mxwvht1
         r1.ONDA_ESPALHAMENTO1 = r.wvspread1
