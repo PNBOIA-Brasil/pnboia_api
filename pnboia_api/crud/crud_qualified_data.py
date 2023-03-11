@@ -9,7 +9,14 @@ from sqlalchemy.orm import Session
 class CRUDQualifiedData(CRUDBase[QualifiedData]):
 
     def last(
-        self, db: Session, *, skip: int = 0, limit: int = 100, last:bool = True, arguments: dict = None
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        last:bool = True,
+        buoy_sel:bool = False,
+        arguments: dict = None
     ) -> List[QualifiedData]:
 
         if arguments:
@@ -18,7 +25,14 @@ class CRUDQualifiedData(CRUDBase[QualifiedData]):
             query = "true"
 
         if last:
-            result = db.query(self.model).distinct(self.model.buoy_id).order_by(desc(self.model.buoy_id)).order_by(desc(self.model.date_time)).all()
+            if buoy_sel:
+                # result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).all()
+                result = db.query(self.model).filter(text(query)).distinct(self.model.buoy_id).order_by(desc(self.model.buoy_id)).order_by(desc(self.model.date_time)).all()
+
+            else:
+                result = db.query(self.model).distinct(self.model.buoy_id).order_by(desc(self.model.buoy_id)).order_by(desc(self.model.date_time)).all()
+
+
         else:
             result = db.query(self.model).distinct(self.model.buoy_id).order_by(desc(self.model.buoy_id)).order_by(self.model.date_time).all()
 
