@@ -114,7 +114,8 @@ def qualified_data_index(
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        order:Optional[bool]=True,
+        last: bool = False,
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -134,6 +135,8 @@ def qualified_data_index(
     if (end_date - start_date).days > 100:
         start_date = (end_date - timedelta(days=100))
 
+    print(start_date)
+    print(end_date)
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
@@ -150,7 +153,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+        result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit, last=last)
 
     if flag:
         result_dict = []
@@ -315,18 +318,18 @@ def qualified_data_index(
         # r1.geom = r.geom
         r1.battery = r.battery
         r1.flag_battery = r.flag_battery
-        # r1.gust1 = r.gust1
-        # r1.flag_gust1 = r.flag_gust1
-        # r1.gust2 = r.gust2
-        # r1.flag_gust2 = r.flag_gust2
-        # r1.srad = r.srad
-        # r1.flag_srad = r.flag_srad
-        # r1.dewpt = r.dewpt
-        # r1.flag_dewpt = r.flag_dewpt
-        # r1.mxwvht1 = r.mxwvht1
-        # r1.flag_mxwvht1 = r.flag_mxwvht1
-        # r1.wvspread1 = r.wvspread1
-        # r1.flag_wvspread1 = r.flag_wvspread1
+        r1.HMS_WIND_RAJADA1 = r.gust1
+        r1.flag_HMS_WIND_RAJADA1 = r.flag_gust1
+        r1.HMS_WIND_RAJADA2 = r.gust2
+        r1.flag_HMS_WIND_RAJADA2 = r.flag_gust2
+        r1.srad = r.srad
+        r1.flag_srad = r.flag_srad
+        r1.dewpt = r.dewpt
+        r1.flag_dewpt = r.flag_dewpt
+        r1.ONDA_ALTURAMAX_SENSOR1 = r.mxwvht1
+        r1.flag_ONDA_ALTURAMAX_SENSOR1 = r.flag_mxwvht1
+        r1.ONDA_ESPALHAMENTO1 = r.wvspread1
+        r1.flag_ONDA_ESPALHAMENTO1 = r.flag_wvspread1
         # r1.tm1 = r.tm1
         # r1.flag_tm1 = r.flag_tm1
         # r1.pkdir1 = r.pkdir1
@@ -346,84 +349,24 @@ def qualified_data_index(
 
 
 
-
-@router.get("/qualified_data/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
-def qualified_data_index(
-        buoy_id: int,
+@router.get("/petrobras/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
+def qualified_data_last(
         token: str,
-        start_date: Optional[str] = Query(default=(datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
-            title="date_time format is yyyy-mm-ddTHH:MM:SS",
-            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
-        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
-            title="date_time format is yyyy-mm-ddTHH:MM:SS",
-            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        buoy_id:int = None,
         db: Session = Depends(get_db),
-        flag: str = None,
-        limit: int = None,
-        order:Optional[bool]=True
+        last: bool = True,
+        open_data: bool = False,
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
-    arguments = {}
-    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
-    end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    arguments = {'buoy_id=': buoy_id}
 
-    if start_date > datetime.utcnow():
-        start_date = (datetime.utcnow() - timedelta(days=3))
-    if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 10:
-        start_date = (end_date - timedelta(days=10))
+    if open_data:
+        arguments['open_data='] = True
 
-    print(start_date)
-    print(end_date)
+    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
 
-    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
-
-    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
-
-    if buoy.project_id == 2:
-        if user.user_type not in ['admin', 'petrobras']:
-            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
-
-    if not buoy.open_data and not user.user_type == 'admin':
-        if not user.user_type == 'admin':
-            raise HTTPException(
-                status_code=400,
-                detail="You do not have permission to do this action",
-            )
-    else:
-        result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if not result:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Não há dados desde {round((datetime.utcnow() - timedelta(hours=3)).timestamp())*1000}"
-        )
-
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
     result1 = []
     for r in result:
         r1 =  QualifiedDataPetrobrasBase()
@@ -556,7 +499,7 @@ def qualified_data_index(
         r1.ONDA_DIRECAOMED_SENSOR2 = r.wvdir2
         r1.flag_ONDA_DIRECAOMED_SENSOR2 = r.flag_wvdir2
         r1.Timestamp = int(r.date_time.timestamp()*1000)
-        # r1.id = r.id
+        r1.id = r.id
         # r1.raw_id = r.raw_id
         r1.buoy_id = r.buoy_id
         r1.date_time = r.date_time
@@ -565,18 +508,18 @@ def qualified_data_index(
         # r1.geom = r.geom
         r1.battery = r.battery
         r1.flag_battery = r.flag_battery
-        # r1.gust1 = r.gust1
-        # r1.flag_gust1 = r.flag_gust1
-        # r1.gust2 = r.gust2
-        # r1.flag_gust2 = r.flag_gust2
-        # r1.srad = r.srad
-        # r1.flag_srad = r.flag_srad
-        # r1.dewpt = r.dewpt
-        # r1.flag_dewpt = r.flag_dewpt
-        # r1.mxwvht1 = r.mxwvht1
-        # r1.flag_mxwvht1 = r.flag_mxwvht1
-        # r1.wvspread1 = r.wvspread1
-        # r1.flag_wvspread1 = r.flag_wvspread1
+        r1.HMS_WIND_RAJADA1 = r.gust1
+        r1.flag_HMS_WIND_RAJADA1 = r.flag_gust1
+        r1.HMS_WIND_RAJADA2 = r.gust2
+        r1.flag_HMS_WIND_RAJADA2 = r.flag_gust2
+        r1.srad = r.srad
+        r1.flag_srad = r.flag_srad
+        r1.dewpt = r.dewpt
+        r1.flag_dewpt = r.flag_dewpt
+        r1.ONDA_ALTURAMAX_SENSOR1 = r.mxwvht1
+        r1.flag_ONDA_ALTURAMAX_SENSOR1 = r.flag_mxwvht1
+        r1.ONDA_ESPALHAMENTO1 = r.wvspread1
+        r1.flag_ONDA_ESPALHAMENTO1 = r.flag_wvspread1
         # r1.tm1 = r.tm1
         # r1.flag_tm1 = r.flag_tm1
         # r1.pkdir1 = r.pkdir1
@@ -593,12 +536,14 @@ def qualified_data_index(
 
     return result1
 
-@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataBuoyBase])
+
+@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_last(
         token: str,
         db: Session = Depends(get_db),
         last: bool = True,
-        open_data: bool = False
+        open_data: bool = False,
+        buoy_id:int = None,
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
