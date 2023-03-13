@@ -133,7 +133,7 @@ def qualified_data_index(
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        start_date = (end_date - timedelta(days=1))
 
     print(start_date)
     print(end_date)
