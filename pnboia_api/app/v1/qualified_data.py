@@ -105,12 +105,12 @@ def qualified_data_index(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
+        start_date: Optional[str] = Query(default=(datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
@@ -121,12 +121,9 @@ def qualified_data_index(
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
-    try:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
-    except:
-        start_date = datetime.combine(start_date, datetime.min.time())
-        end_date = datetime.combine(end_date, datetime.min.time())
+    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+
 
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
@@ -138,7 +135,7 @@ def qualified_data_index(
     print(start_date)
     print(end_date)
 
-    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
 
@@ -154,6 +151,7 @@ def qualified_data_index(
             )
     else:
         result = crud.crud_qualified_data.qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+
 
     if flag:
         result_dict = []
