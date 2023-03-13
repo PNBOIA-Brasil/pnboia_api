@@ -132,7 +132,7 @@ def qualified_data_index(
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
+    if (end_date - start_date).days > 1:
         start_date = (end_date - timedelta(days=1))
 
     print(start_date)
