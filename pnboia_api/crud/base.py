@@ -55,10 +55,10 @@ class CRUDBase(Generic[ModelType]):
         return result
 
     def create(self, db: Session, *, obj_in: ModelType) -> ModelType:
-
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)
 
+
+        db_obj = self.model(**obj_in_data)
 
         if str(self.model) == "<class 'pnboia_api.models.moored.Buoy'>":
             max_id = db.query(func.max(self.model.buoy_id)).first()

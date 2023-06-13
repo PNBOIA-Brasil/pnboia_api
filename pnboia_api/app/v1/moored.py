@@ -86,7 +86,6 @@ def buoy_create(
             detail="You do not have permission to do this action",
         )
 
-
     result = crud.crud_moored.buoy.create(db=db, obj_in=obj_in)
 
     return result
