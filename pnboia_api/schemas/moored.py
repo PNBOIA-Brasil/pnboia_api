@@ -160,7 +160,7 @@ class AxysGeneralBase(BaseModel):
     mxwvht: Optional[float]
     wvspread: Optional[float]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -238,7 +238,7 @@ class BmobrGeneralBase(BaseModel):
     tp2: Optional[float]
     wvdir2: Optional[int]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -297,7 +297,7 @@ class CriosferaGeneralBase(BaseModel):
     wspd2: Optional[float]
     wdir2: Optional[float]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -329,7 +329,7 @@ class SpotterAllBase(BaseModel):
     wvspread1: Optional[int]
     sensors_data: Optional[dict]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -372,7 +372,7 @@ class SpotterSystemBase(BaseModel):
     solar_voltage: Optional[float]
     humidity: Optional[float]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -416,7 +416,7 @@ class TriaxysGeneralBase(BaseModel):
     tm01: Optional[float]
     sst: Optional[float]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
@@ -466,7 +466,7 @@ class TriaxysStatusBase(BaseModel):
     terminal_cnr: Optional[float]
 
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
