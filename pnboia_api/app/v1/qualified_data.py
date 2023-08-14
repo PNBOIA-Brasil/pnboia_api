@@ -129,8 +129,8 @@ def qualified_data_index(
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 1:
-        start_date = (end_date - timedelta(days=1))
+    if (end_date - start_date).days > 10:
+        start_date = (end_date - timedelta(days=10))
 
     print(start_date)
     print(end_date)
@@ -464,26 +464,48 @@ def qualified_data_last(
         r1.flag_ADCP_BIN20_SPEED = r.flag_cspd20
         r1.ADCP_BIN20_DIRECTION = r.cdir20
         r1.flag_ADCP_BIN20_DIRECTION = r.flag_cdir20
-        r1.ADCP_BIN1_DEPTH = 5.0
-        r1.ADCP_BIN2_DEPTH = 8.5
-        r1.ADCP_BIN3_DEPTH = 12.0
-        r1.ADCP_BIN4_DEPTH = 15.5
-        r1.ADCP_BIN5_DEPTH = 19.0
-        r1.ADCP_BIN6_DEPTH = 22.5
-        r1.ADCP_BIN7_DEPTH = 26.0
-        r1.ADCP_BIN8_DEPTH = 29.5
-        r1.ADCP_BIN9_DEPTH = 33.0
-        r1.ADCP_BIN10_DEPTH = 36.5
-        r1.ADCP_BIN11_DEPTH = 40.0
-        r1.ADCP_BIN12_DEPTH = 43.5
-        r1.ADCP_BIN13_DEPTH = 47.0
-        r1.ADCP_BIN14_DEPTH = 50.5
-        r1.ADCP_BIN15_DEPTH = 54.0
-        r1.ADCP_BIN16_DEPTH = 57.5
-        r1.ADCP_BIN17_DEPTH = 61.0
-        r1.ADCP_BIN18_DEPTH = 64.5
-        r1.ADCP_BIN19_DEPTH = 68.0
-        r1.ADCP_BIN20_DEPTH = 71.5
+        if r.buoy_id in (2,36):
+            r1.ADCP_BIN1_DEPTH = 5.0
+            r1.ADCP_BIN2_DEPTH = 8.5
+            r1.ADCP_BIN3_DEPTH = 12.0
+            r1.ADCP_BIN4_DEPTH = 15.5
+            r1.ADCP_BIN5_DEPTH = 19.0
+            r1.ADCP_BIN6_DEPTH = 22.5
+            r1.ADCP_BIN7_DEPTH = 26.0
+            r1.ADCP_BIN8_DEPTH = 29.5
+            r1.ADCP_BIN9_DEPTH = 33.0
+            r1.ADCP_BIN10_DEPTH = 36.5
+            r1.ADCP_BIN11_DEPTH = 40.0
+            r1.ADCP_BIN12_DEPTH = 43.5
+            r1.ADCP_BIN13_DEPTH = 47.0
+            r1.ADCP_BIN14_DEPTH = 50.5
+            r1.ADCP_BIN15_DEPTH = 54.0
+            r1.ADCP_BIN16_DEPTH = 57.5
+            r1.ADCP_BIN17_DEPTH = 61.0
+            r1.ADCP_BIN18_DEPTH = 64.5
+            r1.ADCP_BIN19_DEPTH = 68.0
+            r1.ADCP_BIN20_DEPTH = 71.5
+        elif r.buoy_id in (22,37):
+            r1.ADCP_BIN1_DEPTH = 1
+            r1.ADCP_BIN2_DEPTH = 4.5
+            r1.ADCP_BIN3_DEPTH = 8.
+            r1.ADCP_BIN4_DEPTH = 11.5
+            r1.ADCP_BIN5_DEPTH = 15.
+            r1.ADCP_BIN6_DEPTH = 18.5
+            r1.ADCP_BIN7_DEPTH = 22.
+            r1.ADCP_BIN8_DEPTH = 25.5
+            r1.ADCP_BIN9_DEPTH = 29.
+            r1.ADCP_BIN10_DEPTH = 32.5
+            r1.ADCP_BIN11_DEPTH = 36.
+            r1.ADCP_BIN12_DEPTH = 39.5
+            r1.ADCP_BIN13_DEPTH = 43.
+            r1.ADCP_BIN14_DEPTH = 46.5
+            r1.ADCP_BIN15_DEPTH = 50.
+            r1.ADCP_BIN16_DEPTH = 53.5
+            r1.ADCP_BIN17_DEPTH = 57
+            r1.ADCP_BIN18_DEPTH = 60.5
+            r1.ADCP_BIN19_DEPTH = 64.
+            r1.ADCP_BIN20_DEPTH = 67.5
         r1.ONDA_ALTURA_SENSOR1 = r.swvht1
         r1.flag_ONDA_ALTURA_SENSOR1 = r.flag_swvht1
         r1.ONDA_PERIODO_SENSOR1 = r.tp1
