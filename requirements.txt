@@ -12,7 +12,7 @@ psycopg2
 flask
 geoalchemy2
 
-pydantic==1.9.0
+pydantic
 geojson_pydantic
 shapely
 python-jose
