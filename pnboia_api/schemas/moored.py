@@ -2,7 +2,7 @@
 from pydantic import BaseModel, HttpUrl, validator, Json
 import datetime
 from typing import Optional, Any, List
-from geojson_pydantic import Feature, Polygon, Point
+# from geojson_pydantic import Feature, Polygon, Point
 
 from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
