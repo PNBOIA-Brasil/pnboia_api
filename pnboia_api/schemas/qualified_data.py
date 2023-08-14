@@ -1,6 +1,7 @@
 # coding: utf-8
 from pydantic import BaseModel, HttpUrl, validator, Json
 import datetime
+from decimal import Decimal
 from typing import Optional, Any, List
 from geojson_pydantic import Feature, Polygon, Point
 
@@ -201,6 +202,15 @@ class QualifiedDataPetrobrasBase(BaseModel):
     #         # raise ValueError('must be a valid WKBE element')
     #     return ewkb_to_wkt(v)
 
+    @validator('my_float_field', pre=True, always=True,check_fields=False)
+    def validate_float_field(cls, value):
+        return QualifiedDataPetrobrasBase.convert_decimal_to_float(value)
+
+    @staticmethod
+    def convert_decimal_to_float(value):
+        if isinstance(value, Decimal):
+            return float(value)
+        return value
 
     class Config:
         orm_mode = True
