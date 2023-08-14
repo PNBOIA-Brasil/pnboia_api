@@ -4,7 +4,7 @@ import datetime
 from typing import Optional, Any, List
 from geojson_pydantic import Feature, Polygon, Point
 
-from geoalchemy2.shape import to_shape 
+from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
 
 from pnboia_api.models.moored import Buoy
@@ -17,7 +17,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 def ewkb_to_wkt(geom: WKBElement):
     """
-    Converts a geometry formated as WKBE to WKT 
+    Converts a geometry formated as WKBE to WKT
     in order to parse it into pydantic Model
 
     Args:
@@ -45,7 +45,7 @@ class BuoyBase(BaseModel):
     metarea_section: Optional[str]
     project_id: Optional[int]
 
-    @validator('geom', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             return None
