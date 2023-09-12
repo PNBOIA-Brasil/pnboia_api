@@ -2,9 +2,9 @@
 from pydantic import BaseModel, HttpUrl, validator, Json
 import datetime
 from typing import Optional, Any, List
-from geojson_pydantic import Feature, Polygon, Point
+# from geojson_pydantic import Feature, Polygon, Point
 
-from geoalchemy2.shape import to_shape 
+from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
 
 from pnboia_api.models.drift import BuoyDrift
@@ -18,7 +18,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 def ewkb_to_wkt(geom: WKBElement):
     """
-    Converts a geometry formated as WKBE to WKT 
+    Converts a geometry formated as WKBE to WKT
     in order to parse it into pydantic Model
 
     Args:
@@ -44,13 +44,13 @@ class BuoyDriftBase(BaseModel):
     project_id: Optional[int]
     antenna_id: Optional[str]
 
-    @validator('geom_last_position', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom_last_position', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             raise ValueError('must be a valid WKBE element')
         return ewkb_to_wkt(v)
 
-    @validator('geom_deploy', pre=True,allow_reuse=True,whole=True, always=True)
+    @validator('geom_deploy', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
         if not isinstance(v, WKBElement):
             raise ValueError('must be a valid WKBE element')

@@ -34,21 +34,28 @@ class CRUDBase(Generic[ModelType]):
         return result
 
     def index(
-        self, db: Session, *, skip: int = 0, order:bool = False,limit: int = None, arguments: dict = None
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        order:bool = False,
+        limit: int = None,
+        arguments: dict = None,
     ) -> List[ModelType]:
 
         if arguments:
             query = self.create_query(arguments)
         else:
             query = "true"
-        
+
         if limit:
             if order:
-                result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).limit(limit).all()          
+                result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).limit(limit).all()
             else:
                 result = db.query(self.model).filter(text(query)).limit(limit).all()
+
         elif order:
-            result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).all()          
+            result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).all()
         else:
             result = db.query(self.model).filter(text(query)).all()
 
@@ -78,7 +85,7 @@ class CRUDBase(Generic[ModelType]):
 
     def update(self, db: Session, *, id_pk: int, update_token=False, obj_in: Union[ModelType, Dict[str, Any]]
     ) -> ModelType:
-    
+
         if str(self.model) == "<class 'pnboia_api.models.moored.Buoy'>":
             obj_old = db.query(self.model).filter(self.model.buoy_id == id_pk).first()
         elif str(self.model) == "<class 'pnboia_api.models.drift.BuoyDrift'>":
