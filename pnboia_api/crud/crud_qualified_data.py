@@ -43,4 +43,5 @@ class CRUDQualifiedData(CRUDBase[QualifiedData]):
 
         return result
 
+spotter_qualified_data = CRUDQualifiedData(SpotterQualifiedDataModel)
 qualified_data = CRUDQualifiedData(QualifiedData)

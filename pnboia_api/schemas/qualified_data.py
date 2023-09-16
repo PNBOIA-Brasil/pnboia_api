@@ -7,16 +7,16 @@ from typing import Optional, Any, List
 from geoalchemy2.shape import to_shape
 from geoalchemy2.elements import WKBElement
 
-from pnboia_api.models.moored import Buoy
+# from pnboia_api.models.moored import Buoy
 from pnboia_api.schemas.moored import BuoyBase
 
-from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
-from geoalchemy2.types import Geometry
+# from sqlalchemy import Boolean, Column, Computed, Date, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, text
+# from geoalchemy2.types import Geometry
 
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import INTERVAL
-from sqlalchemy.ext.declarative import declarative_base
-import numpy as np
+# from sqlalchemy.orm import relationship
+# from sqlalchemy.dialects.postgresql import INTERVAL
+# from sqlalchemy.ext.declarative import declarative_base
+# import numpy as np
 
 def ewkb_to_wkt(geom: WKBElement):
     """
@@ -208,7 +208,7 @@ class QualifiedDataPetrobrasBase(BaseModel):
 class QualifiedDataBase(BaseModel):
 
     id: Optional[int] = None
-    raw_id: Optional[int] = None
+    # raw_id: Optional[int] = None
     buoy_id: Optional[int] = None
     date_time: Optional[datetime.datetime] = None
     latitude: Optional[float] = None
@@ -515,7 +515,6 @@ class QualifiedDataBaseAlias(BaseModel):
     class Config:
         orm_mode = True
 
-
 class QualifiedDataBuoyBase(BaseModel):
 
     id: Optional[int] = None
@@ -661,6 +660,46 @@ class QualifiedDataBuoyBase(BaseModel):
     buoy: Optional[BuoyBase] = None
     flag_latitude: Optional[float] = None
     flag_longitude: Optional[float] = None
+
+
+    @validator('geom', pre=True,allow_reuse=True, always=True)
+    def correct_geom_format(cls, v):
+        if not isinstance(v, WKBElement):
+            return None
+            # raise ValueError('must be a valid WKBE element')
+        return ewkb_to_wkt(v)
+
+    class Config:
+        orm_mode = True
+
+class SpotterQualified(BaseModel):
+
+    id: Optional[int] = None
+    buoy_id: Optional[int] = None
+    date_time: Optional[datetime.datetime] = None
+    latitude: Optional[float] = None
+    flag_latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    flag_longitude: Optional[float] = None
+    geom: Optional[str] = None
+    wspd1: Optional[float] = None
+    flag_wspd1: Optional[int] = None
+    wdir1: Optional[int] = None
+    flag_wdir1: Optional[int] = None
+    swvht1: Optional[float] = None
+    flag_swvht1: Optional[int] = None
+    tp1: Optional[float] = None
+    flag_tp1: Optional[int] = None
+    wvdir1: Optional[int] = None
+    flag_wvdir1: Optional[int] = None
+    wvspread1: Optional[int] = None
+    flag_wvspread1: Optional[int] = None
+    tm1: Optional[float] = None
+    flag_tm1: Optional[int] = None
+    pkdir1: Optional[float] = None
+    flag_pkdir1: Optional[int] = None
+    pkspread1: Optional[float] = None
+    flag_pkspread1: Optional[int] = None
 
 
     @validator('geom', pre=True,allow_reuse=True, always=True)

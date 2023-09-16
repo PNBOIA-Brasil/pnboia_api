@@ -100,6 +100,9 @@ def qualified_data_index(
 
     return result
 
+#######################
+# PETROBRAS
+#######################
 
 @router.get("/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_index(
@@ -367,7 +370,9 @@ def qualified_data_index(
     return result1
 
 
-
+#######################
+# PETROBRAS
+#######################
 
 @router.get("/petrobras/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_last(
@@ -577,6 +582,30 @@ def qualified_data_last(
         result1.append(r1)
 
     return result1
+
+#######################
+# IDEM
+#######################
+
+@router.get("/spotter/last", status_code=200, response_model=List[SpotterQualified])
+def qualified_data_last(
+        token: str,
+        buoy_id:int = None,
+        db: Session = Depends(get_db),
+        last: bool = True,
+        open_data: bool = False,
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {'buoy_id=': buoy_id}
+
+    if open_data:
+        arguments['open_data='] = True
+
+    result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+
+    return result
 
 
 @router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
