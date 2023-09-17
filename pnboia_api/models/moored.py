@@ -292,6 +292,19 @@ class SpotterGeneral(Base):
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
 
+class SpotterSmartMooring(Base):
+    __tablename__ = 'spotter_smart_mooring'
+    __table_args__ = {'schema': 'moored', 'comment': 'Dados de temperatura do smart mooring (fundeio inteligente) da Spotter.'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.spotter_smart_mooring_id_seq'::regclass)"), comment='Id do dado')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia spotter.')
+    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP em horário ZULU.')
+    latitude = Column(Numeric(8, 6), nullable=False)
+    longitude = Column(Numeric(8, 6), nullable=False)
+    sensors_data = Column(JSON, comment='Dados dos sensores.')
+
+    buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
 
 class SpotterSmartMooringConfig(Base):
     __tablename__ = 'spotter_smart_mooring_config'

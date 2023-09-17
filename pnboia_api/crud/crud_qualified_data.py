@@ -43,5 +43,8 @@ class CRUDQualifiedData(CRUDBase[QualifiedData]):
 
         return result
 
-spotter_qualified_data = CRUDQualifiedData(SpotterQualifiedDataModel)
 qualified_data = CRUDQualifiedData(QualifiedData)
+
+# Spotter
+spotter_qualified_data = CRUDQualifiedData(SpotterQualifiedDataModel)
+spotter_smart_mooring_qualified_data = CRUDQualifiedData(SpotterSmartMooringQualifiedModel)

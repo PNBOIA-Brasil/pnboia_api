@@ -162,7 +162,7 @@ class SpotterQualifiedDataModel(Base):
     __tablename__ = 'spotter_qualified'
     __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados e com suas respectivas flags.'}
 
-    id = Column(ForeignKey(SpotterGeneral.id, onupdate='CASCADE'), nullable=False, unique=True, comment='ID do dado.')
+    id = Column(ForeignKey(SpotterGeneral.id, onupdate='CASCADE'), primary_key=True, nullable=False, unique=True, comment='ID do dado.')
     buoy_id = Column(SmallInteger, primary_key=True, comment='Id de identificação da boia.')
     date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
     latitude = Column(Numeric(8, 6), nullable=False)
@@ -190,3 +190,19 @@ class SpotterQualifiedDataModel(Base):
     flag_pkspread1 = Column(SmallInteger)
 
     qualified_general = relationship(SpotterGeneral, foreign_keys=[id])
+
+class SpotterSmartMooringQualifiedModel(Base):
+    __tablename__ = 'spotter_smart_mooring_qualified'
+    __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados das spotters (com smart mooring).'}
+
+    id = Column(ForeignKey(SpotterSmartMooring.id, onupdate='CASCADE'), primary_key=True, nullable=False, unique=True, comment='ID do dado.')
+    buoy_id = Column(SmallInteger, comment='ID da boia')
+    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
+    latitude = Column(Numeric(8, 6), nullable=False)
+    flag_latitude = Column(SmallInteger)
+    longitude = Column(Numeric(8, 6), nullable=False)
+    flag_longitude = Column(SmallInteger)
+    # geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
+    sensors_data_flagged = Column(JSON, comment='Sensors Data Flagged - Dicionário contendo as temperaturas dos sensores ao longo da linha de fundeio, em °C')
+
+    qualified_general = relationship(SpotterSmartMooring, foreign_keys=[id])

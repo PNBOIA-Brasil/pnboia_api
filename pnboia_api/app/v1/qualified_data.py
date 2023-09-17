@@ -1,9 +1,14 @@
 import pandas as pd
 import numpy as np
+import csv
+from io import StringIO
 
 from typing import Optional, Any, List
-from fastapi import APIRouter, Query, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect
+
 
 from pnboia_api.schemas.qualified_data import *
 from pnboia_api.schemas.qualified_data import QualifiedDataPetrobrasBase
@@ -38,7 +43,8 @@ def qualified_data_index(
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        order:Optional[bool]=True,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -55,14 +61,14 @@ def qualified_data_index(
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+    if (end_date - start_date).days > 30:
+        start_date = (end_date - timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
-
+    print(buoy.name)
     if buoy.project_id == 2:
         if user.user_type not in ['admin', 'petrobras']:
             arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
@@ -98,8 +104,11 @@ def qualified_data_index(
                     delattr(result[idx],key)
                     delattr(result[idx],f"flag_{key}")
 
-    return result
-
+    if response_type == "csv":
+        filename = file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 #######################
 # PETROBRAS
 #######################
@@ -132,8 +141,8 @@ def qualified_data_index(
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 10:
-        start_date = (end_date - timedelta(days=10))
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
     print(start_date)
     print(end_date)
@@ -607,6 +616,182 @@ def qualified_data_last(
 
     return result
 
+@router.get("/spotter_smart_mooring/last",
+        status_code=200,
+        response_model=List[SpotterSmartMooringQualified])
+def qualified_data_last(
+        token: str,
+        buoy_id:int = None,
+        db: Session = Depends(get_db),
+        last: bool = True,
+        open_data: bool = False,
+        response_type: str="json"
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {'buoy_id=': buoy_id}
+
+    if open_data:
+        arguments['open_data='] = True
+
+    result = crud.crud_qualified_data.spotter_smart_mooring_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+
+    if response_type == "csv":
+        return response_csv(result=result)
+    elif response_type == "json":
+        return result
+
+
+@router.get("/spotter", status_code=200, response_model=List[SpotterQualified])
+def qualified_data_index(
+        buoy_id: int,
+        token: str,
+        start_date: Optional[str] = Query(default=(datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        db: Session = Depends(get_db),
+        flag: str = None,
+        limit: int = None,
+        order:Optional[bool]=True,
+        last: bool = False,
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+
+
+    if start_date > datetime.utcnow():
+        start_date = (datetime.utcnow() - timedelta(days=3))
+    if start_date >= end_date:
+        start_date = (end_date - timedelta(days=1))
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
+
+    print(start_date)
+    print(end_date)
+
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
+
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+
+
+    if flag:
+        result_dict = []
+        for r in result:
+            result_dict.append(vars(r))
+        result_df = pd.DataFrame(result_dict)
+        column_flag = []
+        for column in result_df.columns:
+            if column[0:4] == "flag":
+                column_flag.append(column.split("_")[1])
+        for c in column_flag:
+            if c not in ['latitude', 'longitude']:
+                if flag == 'all':
+                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
+                elif flag == 'soft':
+                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
+        result_dict = result_df.to_dict(orient='records')
+        for idx, r in enumerate(result):
+            for key,value in result_dict[idx].items():
+                if value == np.nan:
+                    delattr(result[idx],key)
+                    delattr(result[idx],f"flag_{key}")
+    return result
+
+@router.get("/spotter_smart_mooring", status_code=200, response_model=List[SpotterQualified])
+def qualified_data_index(
+        buoy_id: int,
+        token: str,
+        start_date: Optional[str] = Query(default=(datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow() + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
+            title="date_time format is yyyy-mm-ddTHH:MM:SS",
+            regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        db: Session = Depends(get_db),
+        flag: str = None,
+        limit: int = None,
+        order:Optional[bool]=True,
+        last: bool = False,
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+
+
+    if start_date > datetime.utcnow():
+        start_date = (datetime.utcnow() - timedelta(days=3))
+    if start_date >= end_date:
+        start_date = (end_date - timedelta(days=1))
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
+
+    print(start_date)
+    print(end_date)
+
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%dT%H:%M:%S"), 'date_time<=': end_date.strftime("%Y-%m-%dT%H:%M:%S")}
+
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.spotter_smart_mooring_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+
+
+    if flag:
+        result_dict = []
+        for r in result:
+            result_dict.append(vars(r))
+        result_df = pd.DataFrame(result_dict)
+        column_flag = []
+        for column in result_df.columns:
+            if column[0:4] == "flag":
+                column_flag.append(column.split("_")[1])
+        for c in column_flag:
+            if c not in ['latitude', 'longitude']:
+                if flag == 'all':
+                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
+                elif flag == 'soft':
+                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
+        result_dict = result_df.to_dict(orient='records')
+        for idx, r in enumerate(result):
+            for key,value in result_dict[idx].items():
+                if value == np.nan:
+                    delattr(result[idx],key)
+                    delattr(result[idx],f"flag_{key}")
+    return result
 
 @router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
 def qualified_data_last(
@@ -627,3 +812,48 @@ def qualified_data_last(
     result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
 
     return result
+
+
+# UTILITIES
+
+def csv_response(result:list, filename:str):
+
+    try:
+        first_object = result[0]
+        inspector = inspect(first_object.__class__)
+
+        column_names = [column.key for column in inspector.columns]
+        csv_data = StringIO()
+        csv_writer = csv.DictWriter(csv_data, fieldnames=column_names)
+        csv_writer.writeheader()
+
+        # print(result)
+        # print("="*10)
+        # print(type(result))
+        # print("="*10)
+        for r in result:
+            # print(type(r))
+            # print(r.)
+            obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns}
+            csv_writer.writerow(obj_dict)
+
+        csv_response = Response(content=csv_data.getvalue())
+        csv_response.headers["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
+        csv_response.headers["Content-Type"] = "text/csv"
+    except:
+        return result
+    return csv_response
+
+def file_name_composition(buoy_name:str, start_date:datetime, end_date:datetime):
+    buoy_name = (buoy_name
+            .lower()
+            .replace(' - ','-')
+            .replace(' ','_')
+        )
+
+    start_date = start_date.strftime("%Y%m%d%H%M")
+    end_date = end_date.strftime("%Y%m%d%H%M")
+
+    filename = buoy_name + "_" + start_date + "_" + end_date
+
+    return filename
