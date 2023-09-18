@@ -109,6 +109,29 @@ def qualified_data_index(
         return csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
+
+@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
+def qualified_data_last(
+        token: str,
+        db: Session = Depends(get_db),
+        last: bool = True,
+        open_data: bool = False,
+        buoy_id:int = None,
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+
+    if open_data:
+        arguments['open_data='] = True
+
+    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
+
+    return result
+
+
+
 #######################
 # PETROBRAS
 #######################
@@ -603,9 +626,12 @@ def qualified_data_last(
         db: Session = Depends(get_db),
         last: bool = True,
         open_data: bool = False,
+        response_type:str="json",
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
 
     arguments = {'buoy_id=': buoy_id}
 
@@ -614,11 +640,13 @@ def qualified_data_last(
 
     result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
 
-    return result
+    if response_type == "csv":
+        filename = file_name_composition(buoy_name=buoy.name)
+        return csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
-@router.get("/spotter_smart_mooring/last",
-        status_code=200,
-        response_model=List[SpotterSmartMooringQualified])
+@router.get("/spotter_smart_mooring/last", status_code=200, response_model=List[SpotterSmartMooringQualified])
 def qualified_data_last(
         token: str,
         buoy_id:int = None,
@@ -630,6 +658,8 @@ def qualified_data_last(
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
     arguments = {'buoy_id=': buoy_id}
 
     if open_data:
@@ -638,10 +668,10 @@ def qualified_data_last(
     result = crud.crud_qualified_data.spotter_smart_mooring_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
 
     if response_type == "csv":
-        return response_csv(result=result)
+        filename = file_name_composition(buoy_name=buoy.name)
+        return csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
-
 
 @router.get("/spotter", status_code=200, response_model=List[SpotterQualified])
 def qualified_data_index(
@@ -658,6 +688,7 @@ def qualified_data_index(
         limit: int = None,
         order:Optional[bool]=True,
         last: bool = False,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -716,7 +747,12 @@ def qualified_data_index(
                 if value == np.nan:
                     delattr(result[idx],key)
                     delattr(result[idx],f"flag_{key}")
-    return result
+
+    if response_type == "csv":
+        filename = file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 @router.get("/spotter_smart_mooring", status_code=200, response_model=List[SpotterQualified])
 def qualified_data_index(
@@ -793,32 +829,12 @@ def qualified_data_index(
                     delattr(result[idx],f"flag_{key}")
     return result
 
-@router.get("/qualified_data/last", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
-def qualified_data_last(
-        token: str,
-        db: Session = Depends(get_db),
-        last: bool = True,
-        open_data: bool = False,
-        buoy_id:int = None,
-    ) -> Any:
-
-    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
-
-    arguments = {}
-
-    if open_data:
-        arguments['open_data='] = True
-
-    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last)
-
-    return result
-
 
 # UTILITIES
 
 def csv_response(result:list, filename:str):
 
-    try:
+    if filename:
         first_object = result[0]
         inspector = inspect(first_object.__class__)
 
@@ -827,33 +843,30 @@ def csv_response(result:list, filename:str):
         csv_writer = csv.DictWriter(csv_data, fieldnames=column_names)
         csv_writer.writeheader()
 
-        # print(result)
-        # print("="*10)
-        # print(type(result))
-        # print("="*10)
         for r in result:
-            # print(type(r))
-            # print(r.)
             obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns}
             csv_writer.writerow(obj_dict)
 
         csv_response = Response(content=csv_data.getvalue())
         csv_response.headers["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
         csv_response.headers["Content-Type"] = "text/csv"
-    except:
+    else:
         return result
     return csv_response
 
-def file_name_composition(buoy_name:str, start_date:datetime, end_date:datetime):
+def file_name_composition(buoy_name:str, start_date:datetime=None, end_date:datetime=None):
     buoy_name = (buoy_name
             .lower()
             .replace(' - ','-')
             .replace(' ','_')
         )
 
-    start_date = start_date.strftime("%Y%m%d%H%M")
-    end_date = end_date.strftime("%Y%m%d%H%M")
+    if start_date and end_date:
+        start_date = start_date.strftime("%Y%m%d%H%M")
+        end_date = end_date.strftime("%Y%m%d%H%M")
 
-    filename = buoy_name + "_" + start_date + "_" + end_date
+        filename = buoy_name + "_" + start_date + "_" + end_date
+    else:
+        filename = buoy_name + "last_data"
 
     return filename
