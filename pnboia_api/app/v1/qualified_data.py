@@ -5,7 +5,6 @@ from io import StringIO
 
 from typing import Optional, Any, List
 from fastapi import APIRouter, Query, Depends, HTTPException, Response
-from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect
 
@@ -833,7 +832,6 @@ def qualified_data_index(
 # UTILITIES
 
 def csv_response(result:list, filename:str):
-
     if filename:
         first_object = result[0]
         inspector = inspect(first_object.__class__)

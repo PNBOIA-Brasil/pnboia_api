@@ -158,6 +158,7 @@ class QualifiedData(Base):
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
 
+# SPOTTER
 class SpotterQualifiedDataModel(Base):
     __tablename__ = 'spotter_qualified'
     __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo todos os dados qualificados e com suas respectivas flags.'}
@@ -206,3 +207,16 @@ class SpotterSmartMooringQualifiedModel(Base):
     sensors_data_flagged = Column(JSON, comment='Sensors Data Flagged - Dicionário contendo as temperaturas dos sensores ao longo da linha de fundeio, em °C')
 
     qualified_general = relationship(SpotterSmartMooring, foreign_keys=[id])
+
+# BMOBR
+# class BmoBrQualifiedDataModel(Base):
+
+
+
+# TRIAXYS
+# class TriaxysQualifiedDataModel(Base):
+
+
+
+# HISTORICAS
+# class AxysQualifiedDataModel(Base):
