@@ -14,18 +14,22 @@ class APIUtils:
             first_object = result[0]
             inspector = inspect(first_object.__class__)
 
-            column_names = [column.key for column in inspector.columns]
+            cols_to_ignore = ['id','raw_id','geom']
+
+            column_names = [column.key for column in inspector.columns if column.key not in cols_to_ignore]
             csv_data = StringIO()
             csv_writer = csv.DictWriter(csv_data, fieldnames=column_names)
             csv_writer.writeheader()
 
             for r in result:
-                obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns}
+                obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns if column.key not in cols_to_ignore}
                 csv_writer.writerow(obj_dict)
 
             csv_response = Response(content=csv_data.getvalue())
             csv_response.headers["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
             csv_response.headers["Content-Type"] = "text/csv"
+            # print(csv_response.body)
+
         else:
             return result
         return csv_response
