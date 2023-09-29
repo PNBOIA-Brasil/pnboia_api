@@ -17,6 +17,8 @@ from datetime import datetime, timedelta, date
 
 from pnboia_api.app.deps import get_db
 
+from pnboia_api.app.utils import APIUtils
+
 Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
@@ -38,7 +40,8 @@ def qualified_data_index(
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        order:Optional[bool]=True,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -55,8 +58,8 @@ def qualified_data_index(
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
         start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -98,7 +101,12 @@ def qualified_data_index(
                     delattr(result[idx],key)
                     delattr(result[idx],f"flag_{key}")
 
-    return result
+
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 
 @router.get("/petrobras", status_code=200, response_model=List[QualifiedDataPetrobrasBase])
