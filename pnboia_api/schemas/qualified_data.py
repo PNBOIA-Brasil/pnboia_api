@@ -207,13 +207,13 @@ class QualifiedDataPetrobrasBase(BaseModel):
 
 class QualifiedDataBase(BaseModel):
 
-    id: Optional[int] = None
-    raw_id: Optional[int] = None
+    # id: Optional[int] = None
+    # raw_id: Optional[int] = None
     buoy_id: Optional[int] = None
     date_time: Optional[datetime.datetime] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    geom: Optional[str] = None
+    # geom: Optional[str] = None
     battery: Optional[float] = None
     flag_battery: Optional[int] = None
     rh: Optional[float] = None
@@ -350,12 +350,12 @@ class QualifiedDataBase(BaseModel):
     flag_latitude: Optional[float] = None
     flag_longitude: Optional[float] = None
 
-    @validator('geom', pre=True,allow_reuse=True, always=True)
-    def correct_geom_format(cls, v):
-        if not isinstance(v, WKBElement):
-            return None
-            # raise ValueError('must be a valid WKBE element')
-        return ewkb_to_wkt(v)
+    # @validator('geom', pre=True,allow_reuse=True, always=True)
+    # def correct_geom_format(cls, v):
+    #     if not isinstance(v, WKBElement):
+    #         return None
+    #         # raise ValueError('must be a valid WKBE element')
+    #     return ewkb_to_wkt(v)
 
     class Config:
         orm_mode = True

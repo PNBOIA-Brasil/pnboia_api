@@ -40,6 +40,8 @@ class QualifiedData(Base):
     flag_atmp = Column(SmallInteger)
     pres = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
     flag_pres = Column(SmallInteger)
+    pres2 = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
+    flag_pres2 = Column(SmallInteger)
     srad = Column(Numeric(4, 2), comment='Solar Radiation - Radiação Solar, em W/m².')
     flag_srad = Column(SmallInteger)
     dewpt = Column(Numeric(4, 2), comment='Dew Point - Temperatura de Orvalho, em °C.')
