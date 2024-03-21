@@ -50,12 +50,12 @@ class CRUDBase(Generic[ModelType]):
 
         if limit:
             if order:
-                result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).limit(limit).all()
+                result = db.query(self.model).filter(text(query)).order_by(self.model.date_time).limit(limit).all()
             else:
                 result = db.query(self.model).filter(text(query)).limit(limit).all()
 
         elif order:
-            result = db.query(self.model).filter(text(query)).order_by(desc(self.model.date_time)).all()
+            result = db.query(self.model).filter(text(query)).order_by(self.model.date_time).all()
         else:
             result = db.query(self.model).filter(text(query)).all()
 
