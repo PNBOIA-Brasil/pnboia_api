@@ -385,7 +385,22 @@ def qualified_data_last(
     if open_data:
         arguments['open_data='] = True
 
-    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if buoy.project_id == 2 and 'METOCEAN' in buoy.name:
+        if user.user_type not in ['admin', 'petrobras']:
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"No data for buoy {buoy_id}. Please see the PNBoia API documentation to check if the correct endpoint for the buoy is being used.",
+            )
+
+
+    result = crud.crud_qualified_data.bmobr_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
 
     result1 = []
     for r in result:

@@ -44,3 +44,4 @@ class CRUDQualifiedData(CRUDBase[QualifiedData]):
         return result
 
 qualified_data = CRUDQualifiedData(QualifiedData)
+bmobr_qualified_data = CRUDQualifiedData(BMOBRQualifiedData)

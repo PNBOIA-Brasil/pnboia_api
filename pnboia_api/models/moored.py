@@ -29,7 +29,7 @@ class Buoy(Base):
     link_site_pnboia = Column(Text, comment='Caso os dados sejam divulgados, link da página no site do CHM.')
     metarea_section = Column(String(10), comment='METAREA em que a boia está localizada.')
     project_id = Column(SmallInteger, comment='ID do projeto responsável pela boia.')
-    
+
 class AxysAdcp(Base):
     __tablename__ = 'axys_adcp'
     __table_args__ = {'schema': 'moored'}
@@ -156,6 +156,7 @@ class BmobrGeneral(Base):
     rh = Column(Numeric, comment='Relative Humidity - Umidade Relativa, em %.')
     dewpt = Column(Numeric, comment='Dew Point - Ponto de Orvalho, em graus Celsius.')
     pres = Column(Numeric, comment='Atmospheric Pressure - Pressão Atmosférica, em hbar.')
+    pres2 = Column(Numeric, comment='Atmospheric Pressure - Pressão Atmosférica, em hbar.')
     sst = Column(Numeric, comment='Sea Surface Temperature - Temperature da Superfície do Mar, em graus Celsius.')
     cspd1 = Column(Numeric, comment='Current Speed Level 1 - Velocidade de Corrente nível 1, em m/s.')
     cdir1 = Column(SmallInteger, comment='Current Direction Level 1 - Direção de Corrente nível 1, em graus.')
