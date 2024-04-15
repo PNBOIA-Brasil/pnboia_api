@@ -716,3 +716,33 @@ class SpotterQualifiedSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class TriaxysQualifiedSchema(BaseModel):
+
+    id: Optional[int] = None
+    buoy_id: Optional[int] = None
+    date_time: Optional[datetime.datetime] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    # geom: Optional[str] = None
+    swvht1: Optional[float] = None
+    flag_swvht1: Optional[int] = None
+    tp1: Optional[float] = None
+    mxwvht1: Optional[float] = None
+    flag_mxwvht1: Optional[int] = None
+    swvht1: Optional[float] = None
+    flag_swvht1: Optional[int] = None
+    wvdir1: Optional[int] = None
+    flag_wvdir1: Optional[int] = None
+    sst: Optional[float] = None
+    flag_sst: Optional[int] = None
+
+    # @validator('geom', pre=True,allow_reuse=True, always=True)
+    # def correct_geom_format(cls, v):
+    #     if not isinstance(v, WKBElement):
+    #         return None
+    #         # raise ValueError('must be a valid WKBE element')
+    #     return ewkb_to_wkt(v)
+
+    class Config:
+        orm_mode = True

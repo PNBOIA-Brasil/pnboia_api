@@ -197,3 +197,27 @@ class SpotterQualified(Base):
     flag_pkspread1 = Column(SmallInteger)
 
     spotter_qualified = relationship(SpotterGeneral, foreign_keys=[id])
+
+
+class TriaxysQualified(Base):
+    __tablename__ = 'triaxys_qualified'
+    __table_args__ = {'schema': 'qualified_data'}
+
+    id = Column(ForeignKey(TriaxysGeneral.id, onupdate='CASCADE'), nullable=False, unique=True, comment='ID do dado.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia.')
+    date_time = Column(DateTime, primary_key=True, nullable=False, comment='TIMESTAMP do dado em horário ZULU.')
+    latitude = Column(Text)
+    longitude = Column(Numeric, nullable=False, comment='Longitude das observações, em graus.')
+    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
+    swvht1 = Column(Numeric, comment='Sea Wave Height 1 - Altura Significativa de Onda, sensor 1 (Triaxys), em metros.')
+    flag_swvht1 = Column(SmallInteger)
+    tp1 = Column(Numeric, comment='Peak Period 1 - Período de Pico, sensor 1 (Triaxys), em segundos.')
+    flag_tp1 = Column(SmallInteger)
+    mxwvht1 = Column(Numeric, comment='Maximum Wave Height 1 - Altura Máxima de Onda, sensor 1 (Triaxys), em metros.')
+    flag_mxwvht1 = Column(SmallInteger)
+    wvdir1 = Column(SmallInteger, comment='Wave Direction 1 - Direção Média de Onda, sensor 1 (Triaxys), em graus.')
+    flag_wvdir1 = Column(SmallInteger)
+    sst = Column(Integer)
+    flag_sst = Column(SmallInteger)
+
+    triaxys_qualified = relationship(TriaxysGeneral, foreign_keys=[id])
