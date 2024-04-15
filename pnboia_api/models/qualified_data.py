@@ -175,7 +175,6 @@ class SpotterQualified(Base):
     flag_wspd1 = Column(SmallInteger)
     wdir1 = Column(SmallInteger, comment='Wind Direction 1 - Direção do Vento, Anemomêtro 1, em graus.')
     flag_wdir1 = Column(SmallInteger)
-    wspd2 = Column(Numeric(4, 2), comment='Wind Speed 2 - Velocidade de Vento, Anemomêtro 2, em m/s.')
     pres1 = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
     flag_pres1 = Column(SmallInteger)
     sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em °C.')
