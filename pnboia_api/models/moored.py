@@ -323,11 +323,25 @@ class SpotterSystem(Base):
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
 
 
+class TriaxysRaw(Base):
+    __tablename__ = 'triaxys_raw'
+    __table_args__ = {'schema': 'moored', 'comment': 'Tabela de dados brutos do triaxys das boias BMO-BR. Dados enviados via satélite em tempo real.'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.bmobr_triaxys_raw_id_seq'::regclass)"), comment='ID do dado.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID da boia.')
+    prime_id = Column(Integer)
+    data_type = Column(String(40))
+    date_time_trans = Column(DateTime, nullable=False, comment='TIMESTAMP do dado. Dado retirado da string e transformado em TIMESTAMP horário ZULU.')
+    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado. Dado retirado da string e transformado em TIMESTAMP horário ZULU.')
+    string = Column(Text, comment='String contendo todos os dados.')
+
+    buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
 class TriaxysGeneral(Base):
     __tablename__ = 'triaxys_general'
     __table_args__ = {'schema': 'moored', 'comment': 'Tabela com os dados gerais das boias Triaxys, com tratamento das strings e dados de acordo com seu DataType e tamanho.'}
 
-    id = Column(ForeignKey(BmobrRaw.id, onupdate='CASCADE'), nullable=False, unique=True, comment='ID do dado.')
+    id = Column(ForeignKey(TriaxysRaw.id, onupdate='CASCADE'), nullable=False, unique=True, comment='ID do dado.')
     buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia.')
     raw_id = Column(ARRAY(Integer))
     message_id = Column(String(3))
@@ -358,21 +372,10 @@ class TriaxysGeneral(Base):
     sst = Column(Integer)
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
-
-
-class TriaxysRaw(Base):
-    __tablename__ = 'triaxys_raw'
-    __table_args__ = {'schema': 'moored', 'comment': 'Tabela de dados brutos do triaxys das boias BMO-BR. Dados enviados via satélite em tempo real.'}
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.bmobr_triaxys_raw_id_seq'::regclass)"), comment='ID do dado.')
-    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID da boia.')
-    prime_id = Column(Integer)
-    data_type = Column(String(40))
-    date_time_trans = Column(DateTime, nullable=False, comment='TIMESTAMP do dado. Dado retirado da string e transformado em TIMESTAMP horário ZULU.')
-    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado. Dado retirado da string e transformado em TIMESTAMP horário ZULU.')
-    string = Column(Text, comment='String contendo todos os dados.')
-
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+
+
 
 class TriaxysStatus(Base):
     __tablename__ = 'triaxys_status'
