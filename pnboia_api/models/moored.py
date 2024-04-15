@@ -29,7 +29,7 @@ class Buoy(Base):
     link_site_pnboia = Column(Text, comment='Caso os dados sejam divulgados, link da página no site do CHM.')
     metarea_section = Column(String(10), comment='METAREA em que a boia está localizada.')
     project_id = Column(SmallInteger, comment='ID do projeto responsável pela boia.')
-    
+
 class AxysAdcp(Base):
     __tablename__ = 'axys_adcp'
     __table_args__ = {'schema': 'moored'}
@@ -268,6 +268,31 @@ class SpotterAll(Base):
     sensors_data = Column(ARRAY(Numeric))
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+class SpotterGeneral(Base):
+    __tablename__ = 'spotter_general'
+    __table_args__ = {'schema': 'moored', 'comment': 'Dados das boias spotters.'}
+
+    id = Column(Integer, nullable=False, unique=True, server_default=text("nextval('moored.spotter_general_id_seq'::regclass)"), comment='ID do dado.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia spotter.')
+    date_time = Column(DateTime, primary_key=True, nullable=False, comment='TIMESTAMP em horário ZULU.')
+    latitude = Column(Numeric(10, 4))
+    longitude = Column(Numeric(10, 4))
+    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
+    wspd1 = Column(Numeric(10, 2), comment='Wind Speed - Velocidade de Vento, em m/s. (variável calculada pela boia, não é observação direta)')
+    wdir1 = Column(SmallInteger, comment='Wind Direction - Direção de Vento, em graus (variável calculada pela boia, não é observação direta).')
+    sst = Column(Numeric(10, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em graus Celius.')
+    swvht1 = Column(Numeric(10, 2), comment='Sea Wave Height - Altura Significativa, em metros.')
+    tp1 = Column(Numeric(10, 2), comment='Peak Period - Período de Pico, em segundos.')
+    tm1 = Column(Numeric(10, 2), comment='Mean Period - Período Médio, em segundos.')
+    pkdir1 = Column(SmallInteger, comment='Peak Wave Direction - Direção de Pico, em graus.')
+    wvdir1 = Column(SmallInteger, comment='Mean Wave Direction - Direção Média de Onda, em graus.')
+    pkspread1 = Column(SmallInteger, comment='Peak Directional Spread - Direção de Pico de Espalhamento, em graus.')
+    wvspread1 = Column(SmallInteger, comment='Mean Wave Direction - Direção Média de Espalhamento, em graus.')
+    pres1 = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em hbar.')
+
+    buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
 
 class SpotterSmartMooringConfig(Base):
     __tablename__ = 'spotter_smart_mooring_config'
