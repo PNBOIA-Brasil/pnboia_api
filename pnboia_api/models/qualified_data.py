@@ -158,11 +158,12 @@ class QualifiedData(Base):
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
 
+
 class SpotterQualified(Base):
     __tablename__ = 'spotter_qualified'
     __table_args__ = {'schema': 'qualified_data'}
 
-    id = Column(SmallInteger, primary_key=True, comment='Id da boia.')
+    id = Column(ForeignKey(SpotterGeneral.id, onupdate='CASCADE'), primary_key=True, comment='ID do registro. Chave estrangeira de moored.spotter_general.')
     buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), comment='ID da boia')
     date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
     latitude = Column(Numeric(8, 6), nullable=False)
@@ -194,4 +195,4 @@ class SpotterQualified(Base):
     pkspread1 = Column(Numeric)
     flag_pkspread1 = Column(SmallInteger)
 
-    buoy = relationship(Buoy, foreign_keys=[buoy_id])
+    spotter_qualified = relationship(SpotterGeneral, foreign_keys=[id])
