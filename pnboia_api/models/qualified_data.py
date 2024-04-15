@@ -159,3 +159,41 @@ class QualifiedData(Base):
     flag_longitude = Column(Numeric)
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+
+class SpotterQualified(Base):
+    __tablename__ = 'spotter_qualified'
+    __table_args__ = {'schema': 'qualified_data'}
+
+    id = Column(ForeignKey(SpotterGeneral.id, onupdate='CASCADE'), primary_key=True, comment='ID do registro. Chave estrangeira de moored.spotter_general.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), comment='ID da boia')
+    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
+    latitude = Column(Numeric(8, 6), nullable=False)
+    flag_latitude = Column(Numeric)
+    longitude = Column(Numeric(8, 6), nullable=False)
+    flag_longitude = Column(Numeric)
+    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
+    wspd1 = Column(Numeric(4, 2), comment='Wind Speed 1 - Velocidade do Vento, Anemomêtro 1, em m/s.')
+    flag_wspd1 = Column(SmallInteger)
+    wdir1 = Column(SmallInteger, comment='Wind Direction 1 - Direção do Vento, Anemomêtro 1, em graus.')
+    flag_wdir1 = Column(SmallInteger)
+    pres1 = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
+    flag_pres1 = Column(SmallInteger)
+    sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em °C.')
+    flag_sst = Column(SmallInteger)
+    swvht1 = Column(Numeric(4, 2), comment='Sea Wave Height 1 - Altura Significativa de Onda, Sensor 1,')
+    flag_swvht1 = Column(SmallInteger)
+    tp1 = Column(Numeric(4, 2), comment='Peak Period 1 - Período de Pico, sensor 1 (Triaxys), em segundos.')
+    flag_tp1 = Column(SmallInteger)
+    wvdir1 = Column(SmallInteger, comment='Mean Wave Diretction 1 - Direção Média de Onda, sensor 1.')
+    flag_wvdir1 = Column(SmallInteger)
+    wvspread1 = Column(SmallInteger, comment='Wave Spread 1 - Direção de Espalhamento de Onda, Sensor 1')
+    flag_wvspread1 = Column(SmallInteger)
+    tm1 = Column(Numeric)
+    flag_tm1 = Column(SmallInteger)
+    pkdir1 = Column(Numeric)
+    flag_pkdir1 = Column(SmallInteger)
+    pkspread1 = Column(Numeric)
+    flag_pkspread1 = Column(SmallInteger)
+
+    spotter_qualified = relationship(SpotterGeneral, foreign_keys=[id])
