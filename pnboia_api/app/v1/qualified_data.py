@@ -609,7 +609,7 @@ def qualified_data_last(
 
 
 
-@router.get("/spotter_qualified", status_code=200, response_model=List[SpotterQualifiedSchema])
+@router.get("/spotter", status_code=200, response_model=List[SpotterQualifiedSchema])
 def qualified_data_index(
         buoy_id: int,
         token: str,
@@ -629,8 +629,8 @@ def qualified_data_index(
 
     arguments = {}
     try:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
     except:
         start_date = datetime.combine(start_date, datetime.min.time())
         end_date = datetime.combine(end_date, datetime.min.time())
@@ -652,6 +652,12 @@ def qualified_data_index(
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if "SPOTTER" not in buoy.name:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Please check in the PNBoia documentation if the correct endpoint is being used for the required buoy (Buoy ID = {buoy_id}).",
+            )
 
     # if buoy.project_id == 2:
     #     if user.user_type not in ['admin', 'petrobras']:
@@ -697,16 +703,16 @@ def qualified_data_index(
     return result
 
 
-@router.get("/triaxys_qualified", status_code=200, response_model=List[TriaxysQualifiedSchema])
+@router.get("/triaxys", status_code=200, response_model=List[TriaxysQualifiedSchema])
 def qualified_data_index(
         buoy_id: int,
         token: str,
         start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
@@ -717,8 +723,8 @@ def qualified_data_index(
 
     arguments = {}
     try:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
     except:
         start_date = datetime.combine(start_date, datetime.min.time())
         end_date = datetime.combine(end_date, datetime.min.time())
@@ -740,6 +746,12 @@ def qualified_data_index(
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if "TRIAXYS" not in buoy.name:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Please check in the PNBoia documentation if the correct endpoint is being used for the required buoy (Buoy ID = {buoy_id}).",
+            )
 
     # if buoy.project_id == 2:
     #     if user.user_type not in ['admin', 'petrobras']:
