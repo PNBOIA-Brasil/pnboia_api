@@ -137,8 +137,8 @@ class BmobrGeneral(Base):
     __tablename__ = 'bmobr_general'
     __table_args__ = {'schema': 'moored', 'comment': 'Tabela com os dados gerais das boias BMO-BR, com tratamento das strings e dados de acordo com seu DataType e tamanho.'}
 
-    id = Column(ForeignKey(BmobrRaw.id, onupdate='CASCADE'), nullable=False, unique=True, comment='ID do dado.')
-    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia.')
+    id = Column(ForeignKey(BmobrRaw.id, onupdate='CASCADE'), primary_key=True,nullable=False, unique=True, comment='ID do dado.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID da boia.')
     date_time = Column(DateTime, primary_key=True, nullable=False, comment='TIMESTAMP do dado em horário ZULU.')
     latitude = Column(Numeric, nullable=False, comment='Latitude das observações, em graus.')
     longitude = Column(Numeric, nullable=False, comment='Longitude das observações, em graus.')

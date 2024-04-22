@@ -47,3 +47,4 @@ qualified_data = CRUDQualifiedData(QualifiedData)
 
 spotter_qualified_data = CRUDQualifiedData(SpotterQualified)
 triaxys_qualified_data = CRUDQualifiedData(TriaxysQualified)
+bmobr_qualified_data = CRUDQualifiedData(BMOBrQualified)
