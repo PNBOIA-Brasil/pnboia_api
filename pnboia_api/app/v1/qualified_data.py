@@ -613,12 +613,12 @@ def qualified_data_last(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
@@ -628,6 +628,7 @@ def qualified_data_index(
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
+    # try:
     try:
         start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
         end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
@@ -707,10 +708,10 @@ def qualified_data_index(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
@@ -765,6 +766,100 @@ def qualified_data_index(
             )
     else:
         result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+
+    if flag:
+        result_dict = []
+        for r in result:
+            result_dict.append(vars(r))
+        result_df = pd.DataFrame(result_dict)
+        column_flag = []
+        for column in result_df.columns:
+            if column[0:4] == "flag":
+                column_flag.append(column.split("_")[1])
+        for c in column_flag:
+            if c not in ['latitude', 'longitude']:
+                if flag == 'all':
+                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
+                elif flag == 'soft':
+                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
+        result_dict = result_df.to_dict(orient='records')
+        for idx, r in enumerate(result):
+            for key,value in result_dict[idx].items():
+                if value == np.nan:
+                    delattr(result[idx],key)
+                    delattr(result[idx],f"flag_{key}")
+
+    if not result:
+        raise HTTPException(
+                status_code=400,
+                detail=f"No data for buoy {buoy_id} for the period.",
+            )
+
+    return result
+
+
+@router.get("/bmobr", status_code=200, response_model=List[BMOBrQualifiedSchema])
+def qualified_data_index(
+        buoy_id: int,
+        token: str,
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        db: Session = Depends(get_db),
+        flag: str = None,
+        limit: int = None,
+        order:Optional[bool]=True
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+    try:
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        start_date = datetime.combine(start_date, datetime.min.time())
+        end_date = datetime.combine(end_date, datetime.min.time())
+
+    if end_date < start_date:
+        raise HTTPException(
+                status_code=400,
+                detail="Provided start date is more recent then the end date.",
+            )
+
+    if start_date > datetime.utcnow():
+        start_date = (datetime.utcnow() - timedelta(days=3))
+    if start_date >= end_date:
+        start_date = (end_date - timedelta(days=1))
+    if (end_date - start_date).days > 100:
+        start_date = (end_date - timedelta(days=100))
+
+
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
+
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if "METOCEAN" not in buoy.name:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Please check in the PNBoia documentation if the correct endpoint is being used for the required buoy (Buoy ID = {buoy_id}).",
+            )
+
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
 
     if flag:
         result_dict = []
