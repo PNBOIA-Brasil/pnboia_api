@@ -608,7 +608,6 @@ def qualified_data_last(
     return result
 
 
-
 @router.get("/spotter", status_code=200, response_model=List[SpotterQualifiedSchema])
 def qualified_data_index(
         buoy_id: int,
@@ -620,9 +619,8 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -645,9 +643,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -671,29 +672,8 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
 
     if not result:
         raise HTTPException(
@@ -701,7 +681,12 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
+
 
 
 @router.get("/triaxys", status_code=200, response_model=List[TriaxysQualifiedSchema])
@@ -715,9 +700,8 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -739,9 +723,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -765,29 +752,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -795,7 +760,11 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 
 @router.get("/bmobr", status_code=200, response_model=List[BMOBrQualifiedSchema])
@@ -809,9 +778,8 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -833,9 +801,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -859,29 +830,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -889,7 +838,11 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 
 @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])
@@ -903,9 +856,8 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -927,9 +879,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -949,29 +904,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -979,4 +912,8 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
