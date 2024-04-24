@@ -613,12 +613,12 @@ def qualified_data_last(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
-            title="date_time format is yyyy-mm-dd",
-            regex="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"),
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         flag: str = None,
         limit: int = None,
@@ -628,6 +628,7 @@ def qualified_data_index(
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     arguments = {}
+    # try:
     try:
         start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
         end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
@@ -707,10 +708,10 @@ def qualified_data_index(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
@@ -801,10 +802,10 @@ def qualified_data_index(
 def qualified_data_index(
         buoy_id: int,
         token: str,
-        start_date: Optional[str] = Query(default=(date.today() - timedelta(days=1)),
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
-        end_date: Optional[str] = Query(default=(date.today() + timedelta(days=2)),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
