@@ -608,7 +608,6 @@ def qualified_data_last(
     return result
 
 
-
 @router.get("/spotter", status_code=200, response_model=List[SpotterQualifiedSchema])
 def qualified_data_index(
         buoy_id: int,
@@ -620,9 +619,7 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -671,29 +668,8 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
+        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
 
     if not result:
         raise HTTPException(
@@ -715,9 +691,7 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -765,29 +739,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -809,9 +761,7 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -859,29 +809,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -903,9 +831,7 @@ def qualified_data_index(
                     title="date_time format is yyyy-mm-ddTHH:MM:SS",
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
-        flag: str = None,
         limit: int = None,
-        order:Optional[bool]=True
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -949,29 +875,7 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=order, arguments=arguments, limit=limit)
-
-    if flag:
-        result_dict = []
-        for r in result:
-            result_dict.append(vars(r))
-        result_df = pd.DataFrame(result_dict)
-        column_flag = []
-        for column in result_df.columns:
-            if column[0:4] == "flag":
-                column_flag.append(column.split("_")[1])
-        for c in column_flag:
-            if c not in ['latitude', 'longitude']:
-                if flag == 'all':
-                    result_df.loc[result_df[f"flag_{c}"]>0, f'{c}'] = np.nan
-                elif flag == 'soft':
-                    result_df.loc[(result_df[f"flag_{c}"]>0)&(result_df[f"flag_{c}"]<50), f'{c}'] = np.nan
-        result_dict = result_df.to_dict(orient='records')
-        for idx, r in enumerate(result):
-            for key,value in result_dict[idx].items():
-                if value == np.nan:
-                    delattr(result[idx],key)
-                    delattr(result[idx],f"flag_{key}")
+        result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
