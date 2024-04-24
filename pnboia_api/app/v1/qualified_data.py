@@ -848,9 +848,9 @@ def qualified_data_index(
                 detail=f"Please check in the PNBoia documentation if the correct endpoint is being used for the required buoy (Buoy ID = {buoy_id}).",
             )
 
-    # if buoy.project_id == 2:
-    #     if user.user_type not in ['admin', 'petrobras']:
-    #         arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
+    if buoy.project_id == 2:
+        if user.user_type not in ['admin', 'petrobras']:
+            arguments['extract(hour from date_time)'] = ['in', [0, 3, 6, 9, 12, 15, 18, 21]]
 
     if not buoy.open_data and not user.user_type == 'admin':
         if not user.user_type == 'admin':
