@@ -723,9 +723,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -798,9 +801,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -873,9 +879,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
