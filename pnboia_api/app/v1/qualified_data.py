@@ -620,6 +620,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -642,9 +643,12 @@ def qualified_data_index(
     if start_date > datetime.utcnow():
         start_date = (datetime.utcnow() - timedelta(days=3))
     if start_date >= end_date:
-        start_date = (end_date - timedelta(days=1))
-    if (end_date - start_date).days > 100:
-        start_date = (end_date - timedelta(days=100))
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
 
 
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
@@ -677,7 +681,12 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
+
 
 
 @router.get("/triaxys", status_code=200, response_model=List[TriaxysQualifiedSchema])
@@ -692,6 +701,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -747,7 +757,11 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 
 @router.get("/bmobr", status_code=200, response_model=List[BMOBrQualifiedSchema])
@@ -762,6 +776,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -817,7 +832,11 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
 
 
 @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])
@@ -832,6 +851,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        response_type:str="json"
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -883,4 +903,8 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return result
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
