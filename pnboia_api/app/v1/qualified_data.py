@@ -686,7 +686,10 @@ def qualified_data_index(
             )
 
     if response_type == "csv":
-        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        if last:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name)
+        else:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
@@ -758,9 +761,9 @@ def qualified_data_index(
             )
     else:
         if last:
-            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+            result = crud.crud_qualified_data.triaxys_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
-            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+            result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
     if not result:
         raise HTTPException(
                 status_code=400,
@@ -768,7 +771,10 @@ def qualified_data_index(
             )
 
     if response_type == "csv":
-        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        if last:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name)
+        else:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
@@ -839,9 +845,9 @@ def qualified_data_index(
             )
     else:
         if last:
-            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+            result = crud.crud_qualified_data.bmobr_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
-            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+            result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
     if not result:
         raise HTTPException(
                 status_code=400,
@@ -849,8 +855,11 @@ def qualified_data_index(
             )
 
     if response_type == "csv":
-        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
-        return APIUtils().csv_response(result=result, filename=filename)
+        if last:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name)
+        else:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+            return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
 
@@ -916,9 +925,9 @@ def qualified_data_index(
             )
     else:
         if last:
-            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+            result = crud.crud_qualified_data.pnboia_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
-            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+            result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
@@ -927,7 +936,10 @@ def qualified_data_index(
             )
 
     if response_type == "csv":
-        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        if last:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name)
+        else:
+            filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result

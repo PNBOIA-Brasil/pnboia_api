@@ -47,7 +47,7 @@ class APIUtils:
 
             filename = buoy_name + "_" + start_date + "_" + end_date
         else:
-            filename = buoy_name + "last_data"
+            filename = buoy_name + "_real_time"
 
         return filename
 
