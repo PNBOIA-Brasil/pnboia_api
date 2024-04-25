@@ -620,6 +620,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        last: bool = False,
         response_type:str="json"
     ) -> Any:
 
@@ -672,7 +673,10 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+        if last:
+            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+        else:
+            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
 
     if not result:
@@ -701,6 +705,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        last: bool = False,
         response_type:str="json"
     ) -> Any:
 
@@ -752,8 +757,10 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
-
+        if last:
+            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+        else:
+            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
     if not result:
         raise HTTPException(
                 status_code=400,
@@ -779,6 +786,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        last: bool = False,
         response_type:str="json"
     ) -> Any:
 
@@ -830,8 +838,10 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
-
+        if last:
+            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+        else:
+            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
     if not result:
         raise HTTPException(
                 status_code=400,
@@ -857,6 +867,7 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
+        last: bool = False,
         response_type:str="json"
     ) -> Any:
 
@@ -904,7 +915,10 @@ def qualified_data_index(
                 detail="You do not have permission to do this action",
             )
     else:
-        result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+        if last:
+            result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+        else:
+            result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
