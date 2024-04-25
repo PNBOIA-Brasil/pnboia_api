@@ -445,12 +445,25 @@ class SetupBuoy(Base):
     register_fk = relationship(Buoy, foreign_keys=[register_id])
 
 
+class BuoysMetadata(Base):
+    __tablename__ = 'buoys_metadata'
+    __table_args__ = {'schema': 'moored'}
 
-# class Parameters(Base):
-#     __tablename__ = 'setup_buoy'
-#     __table_args__ = {'schema': 'moored'}
+    buoy_id = Column(Integer, primary_key=True, nullable=False, comment='ID da boia.')
+    name = Column(String(30), comment='Nome atribuído à boia.')
+    latitude = Column(Numeric(10, 4))
+    longitude = Column(Numeric(10, 4))
+    depth = Column(SmallInteger)
+    local = Column(String(30))
+    model = Column(String(30))
+    brand = Column(String(30))
+    diameter = Column(Numeric)
+    weight = Column(Numeric)
 
-#     id = Column(Integer, primary_key=True, server_default=text("nextval('moored.setup_buoy_id_seq'::regclass)"))
-#     parameter = Column()
+class Parameters(Base):
+    __tablename__ = 'parameters'
+    __table_args__ = {'schema': 'moored'}
 
-#     register_fk = relationship(Buoy, foreign_keys=[register_id])
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.setup_buoy_id_seq'::regclass)"))
+    parameter = Column(String(30))
+    description = Column(Text)

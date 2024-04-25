@@ -52,6 +52,10 @@ class CRUDAlert(CRUDBase[Alert]):
 
 class CRUDSetupBuoy(CRUDBase[SetupBuoy]):
     ...
+class CRUDBuoysMetadata(CRUDBase[BuoysMetadata]):
+    ...
+class CRUDParameters(CRUDBase[Parameters]):
+    ...
 
 
 buoy = CRUDBuoy(Buoy)
@@ -69,3 +73,5 @@ triaxys_raw = CRUDTriaxysRaw(TriaxysRaw)
 triaxys_status = CRUDTriaxysStatus(TriaxysStatus)
 alert = CRUDAlert(Alert)
 setup_buoy = CRUDSetupBuoy(SetupBuoy)
+buoys_metadata = CRUDBuoysMetadata(BuoysMetadata)
+parameters = CRUDParameters(Parameters)
