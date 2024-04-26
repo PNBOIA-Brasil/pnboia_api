@@ -4,6 +4,8 @@ import numpy as np
 from typing import Optional, Any, List
 from fastapi import APIRouter, Query, Depends, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse, HTMLResponse, FileResponse, Response
+from fastapi.encoders import jsonable_encoder
+
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +21,7 @@ from datetime import datetime, timedelta, date
 
 from pnboia_api.app.deps import get_db
 
-from pnboia_api.app.utils import APIUtils, HTMLUtils, TXTUtils
+from pnboia_api.app.utils import APIUtils, HTMLUtils, TXTUtils, JSONUtils
 
 Base.metadata.create_all(bind=engine)
 
@@ -49,10 +51,8 @@ def return_metadata(
             )
 
     buoy_type = buoy.name.split(" ")[0]
-
     setup_buoys = crud.crud_moored.setup_buoy.index(db=db)
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
-
 
     parameters_moored = crud.crud_moored.parameters.index(db=db)
     if buoy_type == "SPOTTER":
@@ -87,11 +87,23 @@ def return_metadata(
 
         return txt_response
 
+    elif response_type == "json":
+        final_response = JSONUtils().compose_base(buoy=buoy,
+                                                     buoys_metadata=buoys_metadata,
+                                                     setup_buoys=setup_buoys,
+                                                     buoy_parameters=buoy_params,
+                                                     buoy_type=buoy_type,
+                                                     parameters=parameters_moored)
+        print(final_response)
+        print(type(final_response))
+        return JSONResponse(jsonable_encoder(final_response))
+
     else:
         raise HTTPException(
                 status_code=400,
                 detail=f"Invalid response type. ['html' or 'txt'] available.",
             )
+
 
 
 # @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])

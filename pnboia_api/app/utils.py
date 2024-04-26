@@ -259,3 +259,39 @@ INFORMAÇÕES SOBRE A BOIA:
         observations= self.compose_observations_section()
 
         return base + buoy_information + parameters + quality_control + observations
+
+class JSONUtils:
+    def __init__(self):
+        pass
+
+    def compose_base(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+
+        base = {"nome":{f"{buoy.name}"},
+            "fundeio":{"latitude":float(buoy.latitude),
+                "longitude":float(buoy.longitude),
+                "local":buoy.local,
+                "pofundidade de fundeio":buoys_metadata[0].depth
+                    },
+            "boia":{
+                "fabricante":buoys_metadata[0].brand,
+                "modelo":buoys_metadata[0].model,
+                "diametro":float(buoys_metadata[0].diameter),
+                "peso":float(buoys_metadata[0].weight),
+                },
+            "parametros":{}
+            }
+
+
+        params_dict = {}
+        for param in parameters:
+            if param.parameter in buoy_parameters:
+                params_dict.update({param.id: f"- {param.parameter}: {param.description}\n"})
+
+            if buoy_type == "METOCEAN" and any(item in param.parameter for item in ["cspd", "cdir"]):
+                params_dict.update({param.id: f"- {param.parameter}: {param.description}\n"})
+
+        base['parametros'].update(params_dict)
+
+
+
+        return base
