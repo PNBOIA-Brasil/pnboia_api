@@ -3,7 +3,7 @@ import numpy as np
 
 from typing import Optional, Any, List
 from fastapi import APIRouter, Query, Depends, HTTPException
-from fastapi.responses import PlainTextResponse, JSONResponse, HTMLResponse
+from fastapi.responses import PlainTextResponse, JSONResponse, HTMLResponse, FileResponse, Response
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, date
 
 from pnboia_api.app.deps import get_db
 
-from pnboia_api.app.utils import APIUtils
+from pnboia_api.app.utils import APIUtils, HTMLUtils, TXTUtils
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,7 +29,7 @@ router = APIRouter()
 # QUALIFIED_DATA.QualifiedData ENDPOINT
 #######################
 
-@router.get("", status_code=200, response_class=HTMLResponse) #response_model=List[SetupBuoySchema]) #response_class=PlainTextResponse)
+@router.get("", status_code=200) #response_model=List[SetupBuoySchema]) #response_class=PlainTextResponse)
 def return_metadata(
             buoy_id: int,
             token: str,
@@ -63,17 +63,34 @@ def return_metadata(
             buoy_params = list(TriaxysQualifiedSchema.__fields__.keys())
 
 
-    base_html = APIUtils().compose_base_html(buoy=buoy, buoys_metadata=buoys_metadata)
-    buoy_information = APIUtils().compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_params, buoy_type=buoy_type)
-    parameters_html = APIUtils().list_parameters(parameters=parameters, buoy_parameters=buoy_params, buoy_type=buoy_type)
-    quality_control_html = APIUtils().compose_quality_control_section()
-    observations_html = APIUtils().compose_observations_section()
+    if response_type == 'html':
+        base = HTMLUtils().compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_information = HTMLUtils().compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_params, buoy_type=buoy_type)
+        parameters= HTMLUtils().list_parameters(parameters=parameters, buoy_parameters=buoy_params, buoy_type=buoy_type)
+        quality_control= HTMLUtils().compose_quality_control_section()
+        observations= HTMLUtils().compose_observations_section()
 
-    final_html = base_html + buoy_information + parameters_html + quality_control_html + observations_html
-    # with open("test", "w") as f:
-    #     f.write(base_text)
+        final_html = base + buoy_information + parameters + quality_control + observations
+        # with open("test", "w") as f:
+        #     f.write(base_text)
+        return HTMLResponse(final_html)
 
-    return final_html
+    elif response_type == "txt":
+
+        base = TXTUtils().compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_information = TXTUtils().compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_params, buoy_type=buoy_type)
+        parameters= TXTUtils().list_parameters(parameters=parameters, buoy_parameters=buoy_params, buoy_type=buoy_type)
+        quality_control= TXTUtils().compose_quality_control_section()
+        observations= TXTUtils().compose_observations_section()
+
+        final_txt = base + buoy_information + parameters + quality_control + observations
+
+
+        txt_response = Response(content=final_txt)
+        txt_response.headers["Content-Disposition"] = f'attachment; filename="test.txt"'
+        txt_response.headers["Content-Type"] = "text/csv"
+
+        return txt_response
 
 
 
