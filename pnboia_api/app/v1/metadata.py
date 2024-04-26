@@ -54,7 +54,7 @@ def return_metadata(
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
 
 
-    parameters = crud.crud_moored.parameters.index(db=db)
+    parameters_moored = crud.crud_moored.parameters.index(db=db)
     if buoy_type == "SPOTTER":
         buoy_params = list(SpotterQualifiedSchema.__fields__.keys())
     if buoy_type == "METOCEAN":
@@ -64,34 +64,34 @@ def return_metadata(
 
 
     if response_type == 'html':
-        base = HTMLUtils().compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
-        buoy_information = HTMLUtils().compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_params, buoy_type=buoy_type)
-        parameters= HTMLUtils().list_parameters(parameters=parameters, buoy_parameters=buoy_params, buoy_type=buoy_type)
-        quality_control= HTMLUtils().compose_quality_control_section()
-        observations= HTMLUtils().compose_observations_section()
-
-        final_html = base + buoy_information + parameters + quality_control + observations
-        # with open("test", "w") as f:
-        #     f.write(base_text)
-        return HTMLResponse(final_html)
+        final_response = HTMLUtils().compose_final_response(buoy=buoy,
+                                                     buoys_metadata=buoys_metadata,
+                                                     setup_buoys=setup_buoys,
+                                                     buoy_parameters=buoy_params,
+                                                     buoy_type=buoy_type,
+                                                     parameters=parameters_moored)
+        return HTMLResponse(final_response)
 
     elif response_type == "txt":
 
-        base = TXTUtils().compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
-        buoy_information = TXTUtils().compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_params, buoy_type=buoy_type)
-        parameters= TXTUtils().list_parameters(parameters=parameters, buoy_parameters=buoy_params, buoy_type=buoy_type)
-        quality_control= TXTUtils().compose_quality_control_section()
-        observations= TXTUtils().compose_observations_section()
+        final_response = TXTUtils().compose_final_response(buoy=buoy,
+                                                     buoys_metadata=buoys_metadata,
+                                                     setup_buoys=setup_buoys,
+                                                     buoy_parameters=buoy_params,
+                                                     buoy_type=buoy_type,
+                                                     parameters=parameters_moored)
 
-        final_txt = base + buoy_information + parameters + quality_control + observations
-
-
-        txt_response = Response(content=final_txt)
+        txt_response = Response(content=final_response)
         txt_response.headers["Content-Disposition"] = f'attachment; filename="test.txt"'
         txt_response.headers["Content-Type"] = "text/csv"
 
         return txt_response
 
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['html' or 'txt'] available.",
+            )
 
 
 # @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])

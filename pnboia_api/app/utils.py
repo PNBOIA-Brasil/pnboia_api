@@ -151,6 +151,14 @@ class HTMLUtils:
         """
         return observations_html
 
+    def compose_final_response(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+        base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        quality_control= self.compose_quality_control_section()
+        observations= self.compose_observations_section()
+
+        return base + buoy_information + parameters + quality_control + observations
 
 
 class TXTUtils:
@@ -242,3 +250,12 @@ INFORMAÇÕES SOBRE A BOIA:
 - As soft flags (Flags 6, 8 e 9) são sugestões de controle de qualidade, ficando a cargo do usuário utilizá-las para filtragem dos dados.
         """
         return observations_html
+
+    def compose_final_response(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+        base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        quality_control= self.compose_quality_control_section()
+        observations= self.compose_observations_section()
+
+        return base + buoy_information + parameters + quality_control + observations
