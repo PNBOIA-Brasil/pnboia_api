@@ -29,6 +29,7 @@ class Buoy(Base):
     link_site_pnboia = Column(Text, comment='Caso os dados sejam divulgados, link da página no site do CHM.')
     metarea_section = Column(String(10), comment='METAREA em que a boia está localizada.')
     project_id = Column(SmallInteger, comment='ID do projeto responsável pela boia.')
+    local = Column(String(30))
 
 class AxysAdcp(Base):
     __tablename__ = 'axys_adcp'
@@ -423,3 +424,46 @@ class Alert(Base):
     email = Column(String)
 
     buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+
+class SetupBuoy(Base):
+    __tablename__ = 'setup_buoy'
+    __table_args__ = {'schema': 'moored'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.setup_buoy_id_seq'::regclass)"))
+    register_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), nullable=False, comment='ID do Registro.')
+    height_anemometer_1 = Column(Numeric, nullable=False)
+    height_anemometer_2 = Column(Numeric, nullable=False)
+    height_thermohygrometer = Column(Numeric, nullable=False)
+    height_barometer = Column(Numeric, nullable=False)
+    depth_adcp = Column(Numeric, nullable=False)
+    blanking_distance_adcp = Column(Numeric, nullable=False)
+    cell_size_adcp = Column(Numeric, nullable=False)
+    number_cells_adcp = Column(Numeric, nullable=False)
+    depth_temp_sensor = Column(Numeric, nullable=False)
+
+    register_fk = relationship(Buoy, foreign_keys=[register_id])
+
+
+class BuoysMetadata(Base):
+    __tablename__ = 'buoys_metadata'
+    __table_args__ = {'schema': 'moored'}
+
+    buoy_id = Column(Integer, primary_key=True, nullable=False, comment='ID da boia.')
+    name = Column(String(30), comment='Nome atribuído à boia.')
+    latitude = Column(Numeric(10, 4))
+    longitude = Column(Numeric(10, 4))
+    depth = Column(SmallInteger)
+    local = Column(String(30))
+    model = Column(String(30))
+    brand = Column(String(30))
+    diameter = Column(Numeric)
+    weight = Column(Numeric)
+
+class Parameters(Base):
+    __tablename__ = 'parameters'
+    __table_args__ = {'schema': 'moored'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.setup_buoy_id_seq'::regclass)"))
+    parameter = Column(String(30))
+    description = Column(Text)

@@ -19,7 +19,7 @@ class CRUDBuoy(CRUDBase[Buoy]):
             result = db.query(self.model).filter(text(query)).order_by(desc(self.model.status)).order_by(self.model.name).all()
         else:
             result = db.query(self.model).filter(text(query)).all()
-        
+
         return result
 
 class CRUDAxysAdcp(CRUDBase[AxysAdcp]):
@@ -50,6 +50,14 @@ class CRUDTriaxysStatus(CRUDBase[TriaxysStatus]):
 class CRUDAlert(CRUDBase[Alert]):
     ...
 
+class CRUDSetupBuoy(CRUDBase[SetupBuoy]):
+    ...
+class CRUDBuoysMetadata(CRUDBase[BuoysMetadata]):
+    ...
+class CRUDParameters(CRUDBase[Parameters]):
+    ...
+
+
 buoy = CRUDBuoy(Buoy)
 axys_adcp = CRUDAxysAdcp(AxysAdcp)
 axys_general = CRUDAxysGeneral(AxysGeneral)
@@ -64,3 +72,6 @@ triaxys_general = CRUDTriaxysGeneral(TriaxysGeneral)
 triaxys_raw = CRUDTriaxysRaw(TriaxysRaw)
 triaxys_status = CRUDTriaxysStatus(TriaxysStatus)
 alert = CRUDAlert(Alert)
+setup_buoy = CRUDSetupBuoy(SetupBuoy)
+buoys_metadata = CRUDBuoysMetadata(BuoysMetadata)
+parameters = CRUDParameters(Parameters)

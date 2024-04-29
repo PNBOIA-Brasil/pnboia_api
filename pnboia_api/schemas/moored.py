@@ -505,3 +505,21 @@ class AlertNewBase(BaseModel):
 
     class Config:
         orm_mode = True
+
+class SetupBuoySchema(BaseModel):
+
+    id: Optional[int]
+    register_id: Optional[float]
+    height_anemometer_1: Optional[float]
+    height_anemometer_2: Optional[float]
+    height_thermohygrometer: Optional[float]
+    height_barometer: Optional[float]
+    depth_adcp: Optional[float]
+    blanking_distance_adcp: Optional[float]
+    cell_size_adcp: Optional[float]
+    number_cells_adcp: Optional[float]
+    depth_temp_sensor: Optional[float]
+
+
+    class Config:
+        orm_mode = True
