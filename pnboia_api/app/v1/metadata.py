@@ -36,7 +36,7 @@ def return_metadata(
             buoy_id: int,
             token: str,
             db: Session = Depends(get_db),
-            response_type:str="plain"
+            response_type:str="html"
 ):
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
