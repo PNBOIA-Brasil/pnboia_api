@@ -84,11 +84,11 @@ class HTMLUtils:
     def compose_buoy_information(self, setup_buoys, buoy_parameters, buoy_type):
         buoys_information_html = ""
 
-        if buoy_type in ("SPOTTER","TRIAXYS"):
+        if buoy_type[0] in ("SPOTTER","TRIAXYS"):
             buoys_information_html += "</ul>"
             return buoys_information_html
 
-        elif buoy_type == "METOCEAN":
+        elif buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA":
             buoys_information_html += "</ul><p>CONFIGURAÇÃO DE SENSORES:</p><ul>"
 
             if "wspd2" in buoy_parameters:
@@ -100,7 +100,7 @@ class HTMLUtils:
                 buoys_information_html += f"<li>Profundidade Inicial (limite superior primeira celula) ADCP: {setup_buoys[0].depth_adcp} m</li>"
 
 
-            buoys_information_html += "</ul>"
+        buoys_information_html += "</ul>"
 
         return buoys_information_html
 
@@ -112,7 +112,7 @@ class HTMLUtils:
             if param.parameter in buoy_parameters:
                 params_dict.update({param.id: f"<li>{param.parameter}: {param.description}</li>"})
 
-            if buoy_type == "METOCEAN" and any(item in param.parameter for item in ["cspd", "cdir"]):
+            if buoy_type[0] == "METOCEAN" and  buoy_type[1] != "CRIOSFERA" and any(item in param.parameter for item in ["cspd", "cdir"]):
                 params_dict.update({param.id: f"<li>{param.parameter}: {param.description}</li>"})
 
 
@@ -152,6 +152,7 @@ class HTMLUtils:
         return observations_html
 
     def compose_final_response(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+
         base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
         buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
         parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)

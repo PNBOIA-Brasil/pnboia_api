@@ -686,7 +686,11 @@ def qualified_data_index(
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
-
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['json' or 'csv'] available.",
+            )
 
 
 @router.get("/triaxys", status_code=200, response_model=List[TriaxysQualifiedSchema])
@@ -765,7 +769,11 @@ def qualified_data_index(
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
-
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['json' or 'csv'] available.",
+            )
 
 @router.get("/bmobr", status_code=200, response_model=List[BMOBrQualifiedSchema])
 def qualified_data_index(
@@ -843,7 +851,11 @@ def qualified_data_index(
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
-
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['json' or 'csv'] available.",
+            )
 
 @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])
 def qualified_data_index(
@@ -917,3 +929,86 @@ def qualified_data_index(
         return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['json' or 'csv'] available.",
+            )
+
+@router.get("/criosfera", status_code=200, response_model=List[CriosferaQualifiedSchema])
+def qualified_data_index(
+        buoy_id: int,
+        token: str,
+        start_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) - timedelta(days=1)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        end_date: Optional[str] = Query(default=(datetime.utcnow().replace(microsecond=0) + timedelta(days=2)),
+                    title="date_time format is yyyy-mm-ddTHH:MM:SS",
+                    regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
+        db: Session = Depends(get_db),
+        limit: int = None,
+        response_type:str="json"
+    ) -> Any:
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    arguments = {}
+    try:
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+    except:
+        start_date = datetime.combine(start_date, datetime.min.time())
+        end_date = datetime.combine(end_date, datetime.min.time())
+
+    if end_date < start_date:
+        raise HTTPException(
+                status_code=400,
+                detail="Provided start date is more recent then the end date.",
+            )
+
+    if start_date > datetime.utcnow():
+        start_date = (datetime.utcnow() - timedelta(days=3))
+    if start_date >= end_date:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Provided start date is more recent than the provided end date. Please review your requested period.",
+            )
+    if (end_date - start_date).days > 30:
+        end_date = (start_date + timedelta(days=30))
+
+
+    arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
+
+    buoy = crud.crud_moored.buoy.show(db=db, id_pk = buoy_id)
+
+    if "METOCEAN" not in buoy.name:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Please check in the PNBoia documentation if the correct endpoint is being used for the required buoy (Buoy ID = {buoy_id}).",
+            )
+
+    if not buoy.open_data and not user.user_type == 'admin':
+        if not user.user_type == 'admin':
+            raise HTTPException(
+                status_code=400,
+                detail="You do not have permission to do this action",
+            )
+    else:
+        result = crud.crud_qualified_data.criosfera_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+
+    if not result:
+        raise HTTPException(
+                status_code=400,
+                detail=f"No data for buoy {buoy_id} for the period.",
+            )
+
+    if response_type == "csv":
+        filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
+        return APIUtils().csv_response(result=result, filename=filename)
+    elif response_type == "json":
+        return result
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['json' or 'csv'] available.",
+            )
