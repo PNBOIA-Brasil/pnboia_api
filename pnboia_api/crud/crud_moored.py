@@ -2,9 +2,12 @@ from pnboia_api.crud.base import CRUDBase
 from pnboia_api.models.moored import *
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, TypeVar
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func
+
+ModelType = TypeVar("ModelType", bound=Base)
+
 
 class CRUDBuoy(CRUDBase[Buoy]):
     def index(
@@ -55,7 +58,62 @@ class CRUDSetupBuoy(CRUDBase[SetupBuoy]):
 class CRUDBuoysMetadata(CRUDBase[BuoysMetadata]):
     ...
 class CRUDParameters(CRUDBase[Parameters]):
-    ...
+    def index_parameters(
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        order:bool = False,
+        limit: int = None,
+        arguments: dict = None,
+    ) -> List[ModelType]:
+
+        if arguments:
+            query = self.create_query(arguments)
+        else:
+            query = "true"
+
+        if limit:
+            if order:
+                result = db.query(self.model).filter(text(query)).order_by(self.model.id).limit(limit).all()
+            else:
+                result = db.query(self.model).filter(text(query)).limit(limit).all()
+
+        elif order:
+            result = db.query(self.model).filter(text(query)).order_by(self.model.id).all()
+        else:
+            result = db.query(self.model).filter(text(query)).all()
+
+        return result
+
+class CRUDRegisterBuoys(CRUDBase[RegisterBuoys]):
+    def index_register(
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        order:bool = False,
+        limit: int = None,
+        arguments: dict = None,
+    ) -> List[ModelType]:
+
+        if arguments:
+            query = self.create_query(arguments)
+        else:
+            query = "true"
+
+        if limit:
+            if order:
+                result = db.query(self.model).filter(text(query)).order_by(self.model.start_date).limit(limit).all()
+            else:
+                result = db.query(self.model).filter(text(query)).limit(limit).all()
+
+        elif order:
+            result = db.query(self.model).filter(text(query)).order_by(self.model.start_date).all()
+        else:
+            result = db.query(self.model).filter(text(query)).all()
+
+        return result
 
 
 buoy = CRUDBuoy(Buoy)
@@ -75,3 +133,4 @@ alert = CRUDAlert(Alert)
 setup_buoy = CRUDSetupBuoy(SetupBuoy)
 buoys_metadata = CRUDBuoysMetadata(BuoysMetadata)
 parameters = CRUDParameters(Parameters)
+register_buoys = CRUDRegisterBuoys(RegisterBuoys)

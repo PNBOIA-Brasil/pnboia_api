@@ -50,11 +50,12 @@ def return_metadata(
                 detail="You do not have permission to do this action",
             )
 
+    register_buoys = crud.crud_moored.register_buoys.index_register(db=db, arguments={'buoy_id=': buoy_id}, order=True)
+
     buoy_type = buoy.name.split(" ")[0:2]
     setup_buoys = crud.crud_moored.setup_buoy.index(db=db)
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
-    parameters_moored = crud.crud_moored.parameters.index(db=db)
-    print(buoy_type)
+    parameters_moored = crud.crud_moored.parameters.index_parameters(db=db, order=True)
 
     if buoy_type[0] == "SPOTTER":
         buoy_params = list(SpotterQualifiedSchema.__fields__.keys())
@@ -70,6 +71,7 @@ def return_metadata(
     if response_type == 'html':
         final_response = HTMLUtils().compose_final_response(buoy=buoy,
                                                      buoys_metadata=buoys_metadata,
+                                                     register_buoys=register_buoys,
                                                      setup_buoys=setup_buoys,
                                                      buoy_parameters=buoy_params,
                                                      buoy_type=buoy_type,
@@ -93,14 +95,13 @@ def return_metadata(
         return txt_response
 
     elif response_type == "json":
-        final_response = JSONUtils().compose_base(buoy=buoy,
+        final_response = JSONUtils().compose_final_response(buoy=buoy,
                                                      buoys_metadata=buoys_metadata,
+                                                     register_buoys=register_buoys,
                                                      setup_buoys=setup_buoys,
                                                      buoy_parameters=buoy_params,
                                                      buoy_type=buoy_type,
                                                      parameters=parameters_moored)
-        print(final_response)
-        print(type(final_response))
         return JSONResponse(jsonable_encoder(final_response))
 
     else:

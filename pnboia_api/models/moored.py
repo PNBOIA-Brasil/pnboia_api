@@ -467,3 +467,23 @@ class Parameters(Base):
     id = Column(Integer, primary_key=True, server_default=text("nextval('moored.setup_buoy_id_seq'::regclass)"))
     parameter = Column(String(30))
     description = Column(Text)
+
+class RegisterBuoys(Base):
+    __tablename__ = 'register_buoys'
+    __table_args__ = {'schema': 'moored', 'comment': 'Tabela com os registros de todas informações sobre as boias fundeadas.'}
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('moored.register_buoys_id_seq'::regclass)"))
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), primary_key=True, nullable=False, comment='ID da boia.')
+    hull_id = Column(SmallInteger, comment='Identificação do casco')
+    name = Column(String(30), comment='Nome atribuído à boia.')
+    mode = Column(String(10), comment='Modo de operação da boia. Apenas FUNDEADA, DERIVA ou NULL (vazio) são aceitos.')
+    latitude = Column(Numeric(10, 4))
+    longitude = Column(Numeric(10, 4))
+    start_date = Column(Date, comment='Data de início do modo.')
+    end_date = Column(Date, comment='Data de fim do modo.')
+    duration = Column(Date, comment='Duração em dias do modo.')
+    current_configuration = Column(Boolean, comment='Se é o modo atual da boia em questão.')
+    depth = Column(SmallInteger, comment='Profundidade de fundeio.')
+    cable = Column(SmallInteger, comment='Comprimento do cabo.')
+    true_north = Column(Boolean, comment='Se dados são abertos ao público em geral.')
+    observation = Column(Text, comment='Caso os dados sejam divulgados, link da página no site do CHM.')
