@@ -90,7 +90,7 @@ class HTMLUtils:
         <p><b>Histórico de Funcionamento:</b></p>
         """
         periods = "<ul>"
-        for register, period in zip(register_buoys,range(1,len(register_buoys))):
+        for register, period in zip(register_buoys,range(1,len(register_buoys)+1)):
             if register.duration:
                 days = register.duration.days#register.duration.days
             else:
@@ -106,11 +106,13 @@ class HTMLUtils:
             else:
                 end_date = "?"
 
-                days = "?"
-                start_date = "?"
-                end_date = "?"
-            reg = f"<li>Período {period}: {start_date} - {end_date} ({days} dias) - {register.mode}</li>"
+            if register.current_configuration == True:
+                reg = f"<li>Período {period}: {start_date} - Atualmente - {register.mode}</li>"
+            elif register.current_configuration == False:
+                reg = f"<li>Período {period}: {start_date} - {end_date} ({days} dias) - {register.mode}</li>"
+
             periods += reg
+
         periods += "</ul>"
         buoy_situation_html += periods
 
@@ -314,20 +316,20 @@ class JSONUtils:
     def __init__(self):
         pass
 
-    def compose_base(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+    def compose_base(self, buoy, register_buoys, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
 
         base = {"nome":f"{buoy.name}",
             "situacao":f"{buoy.mode}",
             "fundeio":{"latitude":float(buoy.latitude),
                 "longitude":float(buoy.longitude),
                 "local":buoy.local,
-                "pofundidade de fundeio":buoys_metadata[0].depth
+                "pofundidade de fundeio (m)":buoys_metadata[0].depth
                     },
             "boia":{
                 "fabricante":buoys_metadata[0].brand,
                 "modelo":buoys_metadata[0].model,
-                "diametro":float(buoys_metadata[0].diameter),
-                "peso":float(buoys_metadata[0].weight),
+                "diametro (m)":float(buoys_metadata[0].diameter),
+                "peso (kg)":float(buoys_metadata[0].weight),
                 },
             "parametros":{}
             }
@@ -336,13 +338,36 @@ class JSONUtils:
         params_dict = {}
         for param in parameters:
             if param.parameter in buoy_parameters:
-                params_dict.update({param.id: f"- {param.parameter}: {param.description}\n"})
+                params_dict.update({param.parameter: f"{param.description}"})
 
             if buoy_type == "METOCEAN" and any(item in param.parameter for item in ["cspd", "cdir"]):
-                params_dict.update({param.id: f"- {param.parameter}: {param.description}\n"})
+                params_dict.update({param.parameter: f"{param.description}"})
 
         base['parametros'].update(params_dict)
 
+        historico_dict = {}
 
+        for register, period in zip(register_buoys,range(1,len(register_buoys)+1)):
+            if register.duration:
+                days = register.duration.days#register.duration.days
+            else:
+                days = "?"
+
+            if register.start_date:
+                start_date = register.start_date.strftime("%Y-%m-%d")
+            else:
+                start_date = "?"
+
+            if register.end_date:
+                end_date = register.end_date.strftime("%Y-%m-%d")
+            else:
+                end_date = "?"
+
+            if register.current_configuration == True:
+                historico_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":"atualmente"}})
+            elif register.current_configuration == False:
+                historico_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":end_date, "duracao (dias)":days}})
+
+        base['historico'] = historico_dict
 
         return base

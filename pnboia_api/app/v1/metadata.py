@@ -56,7 +56,7 @@ def return_metadata(
     buoy_type = buoy.name.split(" ")[0:2]
     setup_buoys = crud.crud_moored.setup_buoy.index(db=db)
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
-    parameters_moored = crud.crud_moored.parameters.index(db=db)
+    parameters_moored = crud.crud_moored.parameters.index_parameters(db=db, order=True)
     print(buoy_type)
 
     if buoy_type[0] == "SPOTTER":
@@ -99,6 +99,7 @@ def return_metadata(
     elif response_type == "json":
         final_response = JSONUtils().compose_base(buoy=buoy,
                                                      buoys_metadata=buoys_metadata,
+                                                     register_buoys=register_buoys,
                                                      setup_buoys=setup_buoys,
                                                      buoy_parameters=buoy_params,
                                                      buoy_type=buoy_type,

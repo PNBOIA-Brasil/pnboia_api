@@ -6,6 +6,9 @@ from typing import List, TypeVar
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func
 
+ModelType = TypeVar("ModelType", bound=Base)
+
+
 class CRUDBuoy(CRUDBase[Buoy]):
     def index(
         self, db: Session, *, skip: int = 0, limit: int = 100, order: bool = False, arguments: dict = None
@@ -55,10 +58,33 @@ class CRUDSetupBuoy(CRUDBase[SetupBuoy]):
 class CRUDBuoysMetadata(CRUDBase[BuoysMetadata]):
     ...
 class CRUDParameters(CRUDBase[Parameters]):
-    ...
+    def index_parameters(
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        order:bool = False,
+        limit: int = None,
+        arguments: dict = None,
+    ) -> List[ModelType]:
 
-ModelType = TypeVar("ModelType", bound=Base)
+        if arguments:
+            query = self.create_query(arguments)
+        else:
+            query = "true"
 
+        if limit:
+            if order:
+                result = db.query(self.model).filter(text(query)).order_by(self.model.id).limit(limit).all()
+            else:
+                result = db.query(self.model).filter(text(query)).limit(limit).all()
+
+        elif order:
+            result = db.query(self.model).filter(text(query)).order_by(self.model.id).all()
+        else:
+            result = db.query(self.model).filter(text(query)).all()
+
+        return result
 
 class CRUDRegisterBuoys(CRUDBase[RegisterBuoys]):
     def index_register(
