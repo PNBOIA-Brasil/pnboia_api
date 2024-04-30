@@ -50,6 +50,9 @@ def return_metadata(
                 detail="You do not have permission to do this action",
             )
 
+    register_buoys = crud.crud_moored.register_buoys.index_register(db=db, arguments={'buoy_id=': buoy_id}, order=True)
+    # register_buoys_current = crud.crud_moored.register_buoys.index(db=db, arguments={'buoy_id=': buoy_id, "current_configuration=": True})
+
     buoy_type = buoy.name.split(" ")[0:2]
     setup_buoys = crud.crud_moored.setup_buoy.index(db=db)
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
@@ -70,6 +73,7 @@ def return_metadata(
     if response_type == 'html':
         final_response = HTMLUtils().compose_final_response(buoy=buoy,
                                                      buoys_metadata=buoys_metadata,
+                                                     register_buoys=register_buoys,
                                                      setup_buoys=setup_buoys,
                                                      buoy_parameters=buoy_params,
                                                      buoy_type=buoy_type,

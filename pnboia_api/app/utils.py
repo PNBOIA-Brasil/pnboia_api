@@ -60,19 +60,22 @@ class APIUtils:
 class HTMLUtils:
     def __init__(self):
         pass
+
+    def compose_title(self, buoy):
+        title = f"""<p><font size="+2"><b>METADADOS - BOIA {buoy.name}</b></font></p>"""
+        return title
+
     def compose_base(self, buoy, buoys_metadata):
 
         base_html = f"""
-    <p>METADADOS - BOIA {buoy.name}</p>
-
-    <p>INFORMAÇÕES SOBRE FUNDEIO:</p>
+    <p><b>Informações sobre o fundeio:</b></p>
     <ul>
         <li>Posição (LAT, LON): {buoy.latitude}, {buoy.longitude}</li>
         <li>Local: {buoy.local}</li>
         <li>Profundidade de fundeio: {buoys_metadata[0].depth} m</li>
     </ul>
 
-    <p>INFORMAÇÕES SOBRE A BOIA:</p>
+    <p><b>Informações sobre a boia:</b></p>
     <ul>
         <li>Fabricante: {buoys_metadata[0].brand}</li>
         <li>Modelo: {buoys_metadata[0].model}</li>
@@ -80,6 +83,38 @@ class HTMLUtils:
         <li>Peso: {buoys_metadata[0].weight} kg</li>
     """
         return base_html
+
+    def compose_buoy_situation(self, register_buoys, buoy):
+        buoy_situation_html = f"""
+        <p>Situação Atual: {buoy.mode}</p><br>
+        <p><b>Histórico de Funcionamento:</b></p>
+        """
+        periods = "<ul>"
+        for register, period in zip(register_buoys,range(1,len(register_buoys))):
+            if register.duration:
+                days = register.duration.days#register.duration.days
+            else:
+                days = "?"
+
+            if register.start_date:
+                start_date = register.start_date.strftime("%Y-%m-%d")
+            else:
+                start_date = "?"
+
+            if register.end_date:
+                end_date = register.end_date.strftime("%Y-%m-%d")
+            else:
+                end_date = "?"
+
+                days = "?"
+                start_date = "?"
+                end_date = "?"
+            reg = f"<li>Período {period}: {start_date} - {end_date} ({days} dias) - {register.mode}</li>"
+            periods += reg
+        periods += "</ul>"
+        buoy_situation_html += periods
+
+        return buoy_situation_html
 
     def compose_buoy_information(self, setup_buoys, buoy_parameters, buoy_type):
         buoys_information_html = ""
@@ -100,12 +135,12 @@ class HTMLUtils:
                 buoys_information_html += f"<li>Profundidade Inicial (limite superior primeira celula) ADCP: {setup_buoys[0].depth_adcp} m</li>"
 
 
-        buoys_information_html += "</ul>"
+        buoys_information_html += "</ul><br>"
 
         return buoys_information_html
 
     def list_parameters(self, parameters, buoy_parameters, buoy_type):
-        parameters_html = f"""<p>PARAMETROS:</p><ul>"""
+        parameters_html = f"""<p><b>Parâmetros:</b></p><ul>"""
 
         params_dict = {}
         for param in parameters:
@@ -131,7 +166,7 @@ class HTMLUtils:
         return parameters_html
 
     def compose_quality_control_section(self):
-        quality_control_html = """<p>CONTROLE DE QUALIDADE:</p><ul>
+        quality_control_html = """<p><b>Controle de Qualidade:</b></p><ul>
         <li> Flag 0: dado considerado saudável;</li>
         <li> Flag 1  (miss_value, hard flag): valores faltosos (nulos);</li>
         <li> Flag 2 (gross_range, hard flag): valores que estão acima ou abaixo dos limites de detecção do respectivo sensor. Tais valores são filtrados (i.e. transformados em -9999);</li>
@@ -145,21 +180,24 @@ class HTMLUtils:
         return quality_control_html
 
     def compose_observations_section(self):
-        observations_html = """<p>OBSERVAÇÕES:</p><ul>
+        observations_html = """<p><b>Observações:</b></p><ul>
   <li> Atentar ao início/fim de cada série temporal, uma vez que podem compreender dados de trajeto do navio de operação de lançamento/recolhimento da boia;</li>
   <li> As soft flags (Flags 6, 8 e 9) são sugestões de controle de qualidade, ficando a cargo do usuário utilizá-las para filtragem dos dados.</li>
         """
         return observations_html
 
-    def compose_final_response(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+    def compose_final_response(self, buoy, register_buoys, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
 
+        title = self.compose_title(buoy=buoy)
         base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_situation = self.compose_buoy_situation(buoy=buoy, register_buoys=register_buoys)
         buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
         parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
         quality_control= self.compose_quality_control_section()
         observations= self.compose_observations_section()
 
-        return base + buoy_information + parameters + quality_control + observations
+
+        return title + buoy_situation + base + buoy_information + parameters + quality_control + observations
 
 
 class TXTUtils:
@@ -278,7 +316,8 @@ class JSONUtils:
 
     def compose_base(self, buoy, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
 
-        base = {"nome":{f"{buoy.name}"},
+        base = {"nome":f"{buoy.name}",
+            "situacao":f"{buoy.mode}",
             "fundeio":{"latitude":float(buoy.latitude),
                 "longitude":float(buoy.longitude),
                 "local":buoy.local,
