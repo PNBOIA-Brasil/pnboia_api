@@ -260,6 +260,17 @@ INFORMAÇÕES SOBRE A BOIA:
 
         return base + buoy_information + parameters + quality_control + observations
 
+    def file_name_composition(self, buoy_name:str, start_date:datetime=None, end_date:datetime=None):
+        buoy_name = (buoy_name
+                .lower()
+                .replace(' - ','-')
+                .replace(' ','_')
+            )
+
+        file_name = buoy_name + "_metadata"
+
+        return file_name
+
 class JSONUtils:
     def __init__(self):
         pass

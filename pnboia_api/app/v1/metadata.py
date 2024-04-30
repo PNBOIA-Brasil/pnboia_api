@@ -82,7 +82,8 @@ def return_metadata(
                                                      parameters=parameters_moored)
 
         txt_response = Response(content=final_response)
-        txt_response.headers["Content-Disposition"] = f'attachment; filename="test.txt"'
+        file_name = TXTUtils().file_name_composition(buoy_name=buoy.name)
+        txt_response.headers["Content-Disposition"] = f'attachment; filename="{file_name}.txt"'
         txt_response.headers["Content-Type"] = "text/csv"
 
         return txt_response
