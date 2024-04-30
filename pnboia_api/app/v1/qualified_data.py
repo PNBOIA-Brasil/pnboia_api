@@ -1041,10 +1041,7 @@ def qualified_data_index(
                 detail=f"Invalid response type. ['json' or 'csv'] available.",
             )
 
-@router.get("", status_code=200, response_model=Union[CriosferaQualifiedSchema,
-                                                               BMOBrQualifiedSchema,
-                                                                TriaxysQualifiedSchema,
-                                                                SpotterQualifiedSchema])
+@router.get("", status_code=200, response_model=Union[CriosferaQualifiedSchema,BMOBrQualifiedSchema,TriaxysQualifiedSchema,SpotterQualifiedSchema])
 def qualified_data_index(
         buoy_id: int,
         token: str,
@@ -1105,7 +1102,7 @@ def qualified_data_index(
             return SpotterQualifiedSchema(result)
         if buoy_type[0] == "TRIAXYS":
             result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
-            return TriaxysQualifiedSchema(result)
+            return TriaxysQualifiedSchema()
         if buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA" and buoy.project_id == 2:
             result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
         if buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA" and buoy.project_id == 2:
@@ -1119,7 +1116,7 @@ def qualified_data_index(
                 detail=f"No data for buoy {buoy_id} for the period.",
             )
 
-    return Response(result)
+    # return Response(result)
     # if response_type == "csv":
     #     filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
     #     return APIUtils().csv_response(result=result, filename=filename)
