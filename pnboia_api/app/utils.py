@@ -84,7 +84,7 @@ class HTMLUtils:
     """
         return base_html
 
-    def compose_buoy_situation(self, register_buoys, buoy):
+    def compose_buoy_history(self, register_buoys, buoy):
         buoy_situation_html = f"""
         <p>Situação Atual: {buoy.mode}</p><br>
         <p><b>Histórico de Funcionamento:</b></p>
@@ -94,7 +94,7 @@ class HTMLUtils:
             if register.duration:
                 days = register.duration.days#register.duration.days
             else:
-                days = "?"
+                days = "0"
 
             if register.start_date:
                 start_date = register.start_date.strftime("%Y-%m-%d")
@@ -126,7 +126,7 @@ class HTMLUtils:
             return buoys_information_html
 
         elif buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA":
-            buoys_information_html += "</ul><p>CONFIGURAÇÃO DE SENSORES:</p><ul>"
+            buoys_information_html += "</ul><p><b>Configuração dos sensores:</b></p><ul>"
 
             if "wspd2" in buoy_parameters:
                 buoys_information_html += f"<li>Altura do Anemômetro 1 (sensor 1): {setup_buoys[0].height_anemometer_1} m</li>"
@@ -137,7 +137,7 @@ class HTMLUtils:
                 buoys_information_html += f"<li>Profundidade Inicial (limite superior primeira celula) ADCP: {setup_buoys[0].depth_adcp} m</li>"
 
 
-        buoys_information_html += "</ul><br>"
+        buoys_information_html += "</ul>"
 
         return buoys_information_html
 
@@ -192,7 +192,7 @@ class HTMLUtils:
 
         title = self.compose_title(buoy=buoy)
         base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
-        buoy_situation = self.compose_buoy_situation(buoy=buoy, register_buoys=register_buoys)
+        buoy_situation = self.compose_buoy_history(buoy=buoy, register_buoys=register_buoys)
         buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
         parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
         quality_control= self.compose_quality_control_section()
@@ -316,7 +316,7 @@ class JSONUtils:
     def __init__(self):
         pass
 
-    def compose_base(self, buoy, register_buoys, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+    def compose_base(self, buoy, buoys_metadata):
 
         base = {"nome":f"{buoy.name}",
             "situacao":f"{buoy.mode}",
@@ -330,11 +330,32 @@ class JSONUtils:
                 "modelo":buoys_metadata[0].model,
                 "diametro (m)":float(buoys_metadata[0].diameter),
                 "peso (kg)":float(buoys_metadata[0].weight),
-                },
-            "parametros":{}
+                }
             }
 
+        return base
 
+    def compose_buoy_information(self, setup_buoys, buoy_parameters, buoy_type):
+
+        buoy_information = {}
+        if buoy_type[0] in ("SPOTTER","TRIAXYS"):
+            return buoy_information
+
+        elif buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA":
+
+            if "wspd2" in buoy_parameters:
+                buoy_information.update({"altura do anemômetro 1 (sensor 1) (m)": {setup_buoys[0].height_anemometer_1}})
+                buoy_information.update({"altura do anemômetro 2 (sensor 2) (m)": {setup_buoys[0].height_anemometer_2}})
+
+
+            if "cspd1" in buoy_parameters:
+                buoy_information.update({"tamanho celula adcp (m)": {setup_buoys[0].cell_size_adcp}})
+                buoy_information.update({"profundidade inicial (limite superior primeira celula) adcp (m):": {setup_buoys[0].depth_adcp}})
+
+        return buoy_information
+
+
+    def list_parameters(self, parameters, buoy_parameters, buoy_type):
         params_dict = {}
         for param in parameters:
             if param.parameter in buoy_parameters:
@@ -343,15 +364,17 @@ class JSONUtils:
             if buoy_type == "METOCEAN" and any(item in param.parameter for item in ["cspd", "cdir"]):
                 params_dict.update({param.parameter: f"{param.description}"})
 
-        base['parametros'].update(params_dict)
 
-        historico_dict = {}
+        return params_dict
+
+    def compose_buoy_history(self, register_buoys):
+        history_dict = {}
 
         for register, period in zip(register_buoys,range(1,len(register_buoys)+1)):
             if register.duration:
                 days = register.duration.days#register.duration.days
             else:
-                days = "?"
+                days = "0"
 
             if register.start_date:
                 start_date = register.start_date.strftime("%Y-%m-%d")
@@ -364,10 +387,29 @@ class JSONUtils:
                 end_date = "?"
 
             if register.current_configuration == True:
-                historico_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":"atualmente"}})
+                history_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":"atualmente"}})
             elif register.current_configuration == False:
-                historico_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":end_date, "duracao (dias)":days}})
+                history_dict.update({f"periodo {period}": {"modo":register.mode,"inicio":start_date, "fim":end_date, "duracao (dias)":days}})
 
-        base['historico'] = historico_dict
+        return history_dict
 
-        return base
+    def compose_final_response(self, buoy, register_buoys, buoys_metadata, setup_buoys, buoy_parameters, buoy_type, parameters):
+
+        final_response = {}
+
+        base = self.compose_base(buoy=buoy, buoys_metadata=buoys_metadata)
+        buoy_history = self.compose_buoy_history(register_buoys=register_buoys)
+        buoy_information = self.compose_buoy_information(setup_buoys=setup_buoys, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        parameters= self.list_parameters(parameters=parameters, buoy_parameters=buoy_parameters, buoy_type=buoy_type)
+        # quality_control= self.compose_quality_control_section()
+        # observations= self.compose_observations_section()
+
+        final_response.update(base)
+        final_response["sensores"] = buoy_information
+        final_response["parametros"] = parameters
+        final_response["historico"] = buoy_history
+
+        # final_response[""] = quality_control
+        # final_response[""] = observations
+
+        return final_response
