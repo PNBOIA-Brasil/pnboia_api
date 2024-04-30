@@ -50,17 +50,21 @@ def return_metadata(
                 detail="You do not have permission to do this action",
             )
 
-    buoy_type = buoy.name.split(" ")[0]
+    buoy_type = buoy.name.split(" ")[0:2]
     setup_buoys = crud.crud_moored.setup_buoy.index(db=db)
     buoys_metadata = crud.crud_moored.buoys_metadata.index(db=db, arguments={'buoy_id=': buoy_id})
-
     parameters_moored = crud.crud_moored.parameters.index(db=db)
-    if buoy_type == "SPOTTER":
+    print(buoy_type)
+
+    if buoy_type[0] == "SPOTTER":
         buoy_params = list(SpotterQualifiedSchema.__fields__.keys())
-    if buoy_type == "METOCEAN":
-            buoy_params = list(BMOBrQualifiedSchema.__fields__.keys())
-    if buoy_type == "TRIAXYS":
+    if buoy_type[0] == "TRIAXYS":
             buoy_params = list(TriaxysQualifiedSchema.__fields__.keys())
+    if buoy_type[0] == "METOCEAN" and buoy_type[1] != "CRIOSFERA":
+        buoy_params = list(BMOBrQualifiedSchema.__fields__.keys())
+    if buoy_type[0] == "METOCEAN" and buoy_type[1] == "CRIOSFERA":
+        buoy_params = list(CriosferaQualifiedSchema.__fields__.keys())
+
 
 
     if response_type == 'html':
@@ -82,7 +86,8 @@ def return_metadata(
                                                      parameters=parameters_moored)
 
         txt_response = Response(content=final_response)
-        txt_response.headers["Content-Disposition"] = f'attachment; filename="test.txt"'
+        file_name = TXTUtils().file_name_composition(buoy_name=buoy.name)
+        txt_response.headers["Content-Disposition"] = f'attachment; filename="{file_name}.txt"'
         txt_response.headers["Content-Type"] = "text/csv"
 
         return txt_response

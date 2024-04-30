@@ -494,3 +494,42 @@ class PNBoiaQualified(Base):
 
     pnboia_qualified = relationship(AxysGeneral, foreign_keys=[id])
     # buoy = relationship(Buoy, foreign_keys=[buoy_id])
+
+
+class CriosferaQualified(Base):
+    __tablename__ = 'criosfera_qualified'
+    __table_args__ = {'schema': 'qualified_data', 'comment': 'Tabela contendo os dados qualificados e com suas respectivas flags das boias do tipo Criosfera.'}
+
+    id = Column(ForeignKey(CriosferaGeneral.id, onupdate='CASCADE'), primary_key=True, nullable=False, unique=True, comment='ID do dado.')
+    buoy_id = Column(ForeignKey(Buoy.buoy_id, onupdate='CASCADE'), comment='ID da boia')
+    date_time = Column(DateTime, nullable=False, comment='TIMESTAMP do dado, em horário ZULU.')
+    latitude = Column(Numeric(8, 6), nullable=False)
+    longitude = Column(Numeric(8, 6), nullable=False)
+    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', persisted=True), comment='Coordenadas espacializadas (x, y) - (Longitude, Latitude)')
+    battery = Column(Numeric(4, 2), comment='Voltagem da Bateria (Volts).')
+    flag_battery = Column(SmallInteger, comment='Flag para bateria.')
+    rh = Column(Numeric(4, 2), comment='Relative Humidity - Umidade Relativa, em %.')
+    flag_rh = Column(SmallInteger)
+    wspd1 = Column(Numeric(4, 2), comment='Wind Speed 1 - Velocidade do Vento, Anemomêtro 1, em m/s.')
+    flag_wspd1 = Column(SmallInteger)
+    wdir1 = Column(SmallInteger, comment='Wind Direction 1 - Direção do Vento, Anemomêtro 1, em graus.')
+    flag_wdir1 = Column(SmallInteger)
+    wspd2 = Column(Numeric(4, 2), comment='Wind Speed 2 - Velocidade de Vento, Anemomêtro 2, em m/s.')
+    flag_wspd2 = Column(SmallInteger)
+    wdir2 = Column(SmallInteger, comment='Wind Direction 2 - Direção de Vento 2, em graus.')
+    flag_wdir2 = Column(SmallInteger)
+    atmp = Column(Numeric(4, 2), comment='Air Temperature - Temperatura do Ar, em graus Celsius.')
+    flag_atmp = Column(SmallInteger)
+    pres = Column(Numeric(6, 2), comment='Atmospheric Pressure - Pressão Atmosférica, em mBar.')
+    flag_pres = Column(SmallInteger)
+    srad = Column(Numeric(4, 2), comment='Solar Radiation - Radiação Solar, em W/m².')
+    flag_srad = Column(SmallInteger)
+    sst = Column(Numeric(4, 2), comment='Sea Surface Temperature - Temperatura da Superfície do Mar, em °C.')
+    flag_sst = Column(SmallInteger)
+    cond = Column(Numeric(4, 2), comment='Conductivity - Condutividade da Superfície do Mar.')
+    flag_cond = Column(SmallInteger)
+    sss = Column(Numeric(4, 2), comment='Sea Surface Salinity - Salinidade da Superfície do Mar.')
+    flag_sss = Column(SmallInteger)
+
+
+    criosfera_qualified = relationship(CriosferaGeneral, foreign_keys=[id])

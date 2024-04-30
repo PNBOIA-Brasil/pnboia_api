@@ -1030,3 +1030,49 @@ class PNBoiaQualifiedSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class CriosferaQualifiedSchema(BaseModel):
+
+    id: Optional[int] = None
+    buoy_id: Optional[int] = None
+    date_time: Optional[datetime.datetime] = None
+    latitude: Optional[float] = None
+    flag_latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    flag_longitude: Optional[float] = None
+    # geom: Optional[str] = None
+    battery: Optional[float] = None
+    flag_battery: Optional[int] = None
+    wspd1: Optional[float] = None
+    flag_wspd1: Optional[int] = None
+    wdir1: Optional[int] = None
+    flag_wdir1: Optional[int] = None
+    wspd2: Optional[float] = None
+    flag_wspd2: Optional[int] = None
+    wdir2: Optional[int] = None
+    flag_wdir2: Optional[int] = None
+    rh: Optional[float] = None
+    flag_rh: Optional[int] = None
+    atmp: Optional[float] = None
+    flag_atmp: Optional[int] = None
+    pres: Optional[float] = None
+    flag_pres: Optional[int] = None
+    srad: Optional[float] = None
+    flag_srad: Optional[int] = None
+    sst: Optional[float] = None
+    flag_sst: Optional[int] = None
+    cond: Optional[float] = None
+    flag_cond: Optional[float] = None
+    sss: Optional[float] = None
+    flag_sss: Optional[float] = None
+
+
+    # @validator('geom', pre=True,allow_reuse=True, always=True)
+    # def correct_geom_format(cls, v):
+    #     if not isinstance(v, WKBElement):
+    #         return None
+    #         # raise ValueError('must be a valid WKBE element')
+    #     return ewkb_to_wkt(v)
+
+    class Config:
+        orm_mode = True
