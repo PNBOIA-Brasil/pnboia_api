@@ -35,13 +35,13 @@ def buoy_show(
 
     return result
 
-@router.get("/buoys", status_code=200, response_model=List[BuoyBase])
+@router.get("/buoys_internal", status_code=200, response_model=List[BuoyBase])
 def obj_index(
         token: str,
         db: Session = Depends(get_db),
         status:Optional[bool]=None,
         order:Optional[bool]=False,
-    ) -> Any:   
+    ) -> Any:
 
     """
     Fetch a single buoy by ID
@@ -53,13 +53,13 @@ def obj_index(
         arguments = {'status=': status}
     else:
         arguments = {}
-    
+
     result = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
     return result
 
 
-@router.post("/buoys", response_model=BuoyBase, status_code=201)
+@router.post("/buoys_internal", response_model=BuoyBase, status_code=201)
 def buoy_create(
         token: str,
         obj_in: BuoyNewBase,
@@ -68,10 +68,10 @@ def buoy_create(
     """
     Create new buoy
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
-    
+
     result = crud.crud_moored.buoy.index(db=db, arguments = {'name=': obj_in.name})
 
     if result:
@@ -91,7 +91,7 @@ def buoy_create(
 
     return result
 
-@router.put("/buoys/{buoy_id}", response_model=BuoyBase, status_code=201)
+@router.put("/buoys_internal/{buoy_id}", response_model=BuoyBase, status_code=201)
 def buoy_update(
         *,
         buoy_id: int,
@@ -102,7 +102,7 @@ def buoy_update(
     """
     Create new buoy
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     result = crud.crud_moored.buoy.index(db=db, arguments = {'buoy_id=': buoy_id})
@@ -123,7 +123,7 @@ def buoy_update(
 
     return result
 
-@router.delete("/buoys/{buoy_id}", response_model=BuoyBase, status_code=201)
+@router.delete("/buoys_internal/{buoy_id}", response_model=BuoyBase, status_code=201)
 def buoy_update(
         *,
         buoy_id: int,
@@ -133,7 +133,7 @@ def buoy_update(
     """
     Create new buoy
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     result = crud.crud_moored.buoy.index(db=db, arguments = {'buoy_id=': buoy_id})
@@ -154,6 +154,31 @@ def buoy_update(
     result = crud.crud_moored.buoy.delete(db=db, id_pk = buoy_id)
 
     return result
+
+
+@router.get("/buoys", status_code=200, response_model=List[AvailableBuoysSchema])
+def obj_index(
+        token: str,
+        db: Session = Depends(get_db),
+        status:Optional[bool]=None,
+        order:Optional[bool]=False,
+    ) -> Any:
+
+    """
+    Fetch list of available buoys
+    """
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    if status != None:
+        arguments = {'status=': status}
+    else:
+        arguments = {}
+
+    result = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
+
+    return result
+
 
 #######################
 # MOORED.AXYSGENERAL ENDPOINT
@@ -184,7 +209,7 @@ def axys_general_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -222,7 +247,7 @@ def bmobr_raw_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -261,7 +286,7 @@ def bmobr_triaxys_raw_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -299,7 +324,7 @@ def spotter_general_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -363,7 +388,7 @@ def spotter_smart_mooring_config_update(
     """
     Create new buoy
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     if not user.user_type == 'admin':
@@ -394,7 +419,7 @@ def spotter_smart_mooring_config_update(
     """
     Create new buoy
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     if not user.user_type == 'admin':
@@ -444,7 +469,7 @@ def spotter_system_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -483,7 +508,7 @@ def bmobr_general_index(
         start_date = (end_date - timedelta(days=1))
     if (end_date - start_date).days > 10:
         start_date = (end_date - timedelta(days=10))
-        
+
     arguments = {'buoy_id=': buoy_id, 'date_time>=': start_date.strftime("%Y-%m-%d"), 'date_time<=': end_date.strftime("%Y-%m-%d")}
 
     print(arguments)
@@ -501,7 +526,7 @@ def obj_index(
         token: str,
         db: Session = Depends(get_db),
         buoy_id:Optional[int] = None
-    ) -> Any:   
+    ) -> Any:
 
     """
     Fetch a single alert by buoy_id
@@ -513,7 +538,7 @@ def obj_index(
         arguments = {'buoy_id=': buoy_id}
     else:
         arguments = {}
-    
+
     result = crud.crud_moored.alert.index(db=db, arguments=arguments)
 
     if not result:
@@ -535,7 +560,7 @@ def buoy_create(
     """
     Create a new alert
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
     if not user.user_type == 'admin':
@@ -543,7 +568,7 @@ def buoy_create(
             status_code=400,
             detail="You do not have permission to do this action",
         )
-    
+
     result = crud.crud_moored.alert.index(db=db, arguments = {'buoy_id=': obj_in.buoy_id})
 
     if result:
@@ -568,7 +593,7 @@ def buoy_update(
     """
     Update an alert
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
     if not user.user_type == 'admin':
         raise HTTPException(
@@ -582,7 +607,7 @@ def buoy_update(
             status_code=400,
             detail="There is no alert for this buoy",
         )
-    
+
     result = crud.crud_moored.alert.update(db=db, id_pk = result[0].id, obj_in=obj_in)
 
     return result
@@ -597,7 +622,7 @@ def buoy_update(
     """
     Delete an alert
     """
-    
+
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
     if not user.user_type == 'admin':
         raise HTTPException(
