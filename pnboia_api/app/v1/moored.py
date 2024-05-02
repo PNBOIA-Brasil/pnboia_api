@@ -192,6 +192,11 @@ def obj_index(
         txt_response = Response(content=final_response)
         txt_response.headers["Content-Disposition"] = f'attachment; filename="pnboia_available_buoys.txt"'
         txt_response.headers["Content-Type"] = "text/csv"
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['html', 'json' or 'txt'] available.",
+            )
 
         return txt_response
 
