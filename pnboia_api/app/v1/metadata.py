@@ -107,7 +107,7 @@ def return_metadata(
     else:
         raise HTTPException(
                 status_code=400,
-                detail=f"Invalid response type. ['html' or 'txt'] available.",
+                detail=f"Invalid response type. ['html', 'json' or 'txt'] available.",
             )
 
 
