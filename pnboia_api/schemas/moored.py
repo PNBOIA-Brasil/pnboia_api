@@ -55,6 +55,21 @@ class BuoyBase(BaseModel):
     class Config:
         orm_mode = True
 
+
+class AvailableBuoysSchema(BaseModel):
+
+    name: Optional[str]
+    buoy_id: Optional[int]
+    mode: Optional[str]
+    last_date_time: Optional[datetime.datetime]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    local: Optional[str]
+    metarea_section: Optional[str]
+
+    class Config:
+        orm_mode = True
+
 class BuoyNewBase(BaseModel):
 
     hull_id: Optional[int]
