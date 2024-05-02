@@ -201,6 +201,27 @@ class HTMLUtils:
 
         return title + buoy_situation + base + buoy_information + parameters + quality_control + observations
 
+    def compose_title_available_buoys(self, buoy):
+        title = f"""<p><font size="+2"><b>METADADOS - BOIA {buoy.name}</b></font></p>"""
+        return title
+
+    def compose_base_available_buoys(self, buoys):
+        base_html = f"""<p><font size="+2"><b>BOIAS DISPONÍVEIS</b></font></p><br>"""
+        for buoy in buoys:
+            buoy_html = f"""<p><b>{buoy.name}</b></p>
+            <ul>
+                <li>Situação: {buoy.mode} </li>
+                <li>Buoy Id: {buoy.buoy_id} </li>
+                <li>Último dado: {buoy.last_date_time}</li>
+                <li>Posição (LAT, LON): {buoy.latitude}, {buoy.longitude}</li>
+                <li>Local: {buoy.local}</li>
+                <li>Metarea: {buoy.metarea_section}</li>
+            </ul><br>
+            """
+            base_html += buoy_html
+
+        return base_html
+
 
 class TXTUtils:
     def __init__(self):
@@ -311,6 +332,28 @@ INFORMAÇÕES SOBRE A BOIA:
         file_name = buoy_name + "_metadata"
 
         return file_name
+
+    def compose_base_available_buoys(self, buoys):
+        base = f"""BOIAS DISPONÍVEIS
+
+
+        """
+        for buoy in buoys:
+            buoy_html = f"""
+{buoy.name}
+Situação: {buoy.mode}
+Buoy Id: {buoy.buoy_id}
+Último dado: {buoy.last_date_time}
+Posição (LAT, LON): {buoy.latitude}, {buoy.longitude}
+Local: {buoy.local}
+Metarea: {buoy.metarea_section}
+
+            """
+            base += buoy_html
+
+        return base
+
+
 
 class JSONUtils:
     def __init__(self):

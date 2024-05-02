@@ -58,12 +58,13 @@ class BuoyBase(BaseModel):
 
 class AvailableBuoysSchema(BaseModel):
 
-    buoy_id: Optional[int]
     name: Optional[str]
+    buoy_id: Optional[int]
+    mode: Optional[str]
     last_date_time: Optional[datetime.datetime]
     latitude: Optional[float]
     longitude: Optional[float]
-    mode: Optional[str]
+    local: Optional[str]
     metarea_section: Optional[str]
 
     class Config:

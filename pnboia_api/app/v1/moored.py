@@ -1,5 +1,6 @@
 from typing import Optional, Any, List
 from fastapi import APIRouter, Query, Depends, HTTPException
+from fastapi.responses import PlainTextResponse, JSONResponse, HTMLResponse, FileResponse, Response
 from sqlalchemy.orm import Session
 
 from pnboia_api.schemas.moored import *
@@ -9,6 +10,9 @@ from  pnboia_api.db.base import Base, engine
 from datetime import datetime, timedelta, date
 
 from pnboia_api.app.deps import get_db
+
+from pnboia_api.app.utils import APIUtils, HTMLUtils, TXTUtils, JSONUtils
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -162,6 +166,7 @@ def obj_index(
         db: Session = Depends(get_db),
         status:Optional[bool]=None,
         order:Optional[bool]=False,
+        response_type:Optional[str]='html'
     ) -> Any:
 
     """
@@ -175,10 +180,20 @@ def obj_index(
     else:
         arguments = {}
 
-    result = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
+    buoys = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
-    return result
+    if response_type == 'html':
+        final_response = HTMLUtils().compose_base_available_buoys(buoys=buoys)
+        return HTMLResponse(final_response)
+    elif response_type == "json":
+        return buoys
+    elif response_type == "txt":
+        final_response = TXTUtils().compose_base_available_buoys(buoys=buoys)
+        txt_response = Response(content=final_response)
+        txt_response.headers["Content-Disposition"] = f'attachment; filename="pnboia_available_buoys.txt"'
+        txt_response.headers["Content-Type"] = "text/csv"
 
+        return txt_response
 
 #######################
 # MOORED.AXYSGENERAL ENDPOINT
