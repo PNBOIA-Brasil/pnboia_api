@@ -166,6 +166,7 @@ def obj_index(
         db: Session = Depends(get_db),
         status:Optional[bool]=None,
         order:Optional[bool]=False,
+        operative:Optional[bool]=False,
         response_type:Optional[str]='html'
     ) -> Any:
 
@@ -178,8 +179,10 @@ def obj_index(
     if status != None:
         arguments = {'status=': status}
     else:
-        arguments = {}
-
+        if operative:
+            arguments = {"status=": True}
+        elif not operative:
+            arguments = {}
     buoys = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
     if response_type == 'html':
