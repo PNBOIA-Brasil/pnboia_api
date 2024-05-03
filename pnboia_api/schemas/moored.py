@@ -66,6 +66,7 @@ class AvailableBuoysSchema(BaseModel):
     longitude: Optional[float]
     local: Optional[str]
     metarea_section: Optional[str]
+    project_id: Optional[str]
 
     class Config:
         orm_mode = True
