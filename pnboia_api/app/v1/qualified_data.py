@@ -674,6 +674,7 @@ def qualified_data_index(
             )
     else:
         if last:
+            arguments = {"buoy_id=":buoy_id}
             result = crud.crud_qualified_data.spotter_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
             result = crud.crud_qualified_data.spotter_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
@@ -765,6 +766,7 @@ def qualified_data_index(
             )
     else:
         if last:
+            arguments = {"buoy_id=":buoy_id}
             result = crud.crud_qualified_data.triaxys_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
             result = crud.crud_qualified_data.triaxys_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
@@ -853,6 +855,7 @@ def qualified_data_index(
             )
     else:
         if last:
+            arguments = {"buoy_id=":buoy_id}
             result = crud.crud_qualified_data.bmobr_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
             result = crud.crud_qualified_data.bmobr_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
@@ -937,6 +940,7 @@ def qualified_data_index(
             )
     else:
         if last:
+            arguments = {"buoy_id=":buoy_id}
             result = crud.crud_qualified_data.pnboia_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
         else:
             result = crud.crud_qualified_data.pnboia_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
@@ -973,7 +977,8 @@ def qualified_data_index(
                     regex="\d{4}-\d?\d-\d?\dT(?:2[0-3]|[01]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"),
         db: Session = Depends(get_db),
         limit: int = None,
-        response_type:str="json"
+        response_type:str="json",
+        last: bool=False
     ) -> Any:
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
@@ -1019,8 +1024,13 @@ def qualified_data_index(
                 status_code=400,
                 detail="You do not have permission to do this action",
             )
+
     else:
-        result = crud.crud_qualified_data.criosfera_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
+        if last:
+            arguments = {"buoy_id=":buoy_id}
+            result = crud.crud_qualified_data.criosfera_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+        else:
+            result = crud.crud_qualified_data.criosfera_qualified_data.index(db=db, order=True, arguments=arguments, limit=limit)
 
     if not result:
         raise HTTPException(
