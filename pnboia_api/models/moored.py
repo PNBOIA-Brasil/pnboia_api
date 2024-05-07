@@ -30,6 +30,8 @@ class Buoy(Base):
     metarea_section = Column(String(10), comment='METAREA em que a boia está localizada.')
     project_id = Column(SmallInteger, comment='ID do projeto responsável pela boia.')
     local = Column(String(30))
+    api_endpoint = Column(String(30))
+
 
 class AxysAdcp(Base):
     __tablename__ = 'axys_adcp'

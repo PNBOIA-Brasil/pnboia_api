@@ -216,6 +216,7 @@ class HTMLUtils:
                 <li>Posição (LAT, LON): {buoy.latitude}, {buoy.longitude}</li>
                 <li>Local: {buoy.local}</li>
                 <li>Metarea: {buoy.metarea_section}</li>
+                <li>API Endpoint: {buoy.api_endpoint}</li>
             </ul><br>
             """
             base_html += buoy_html
@@ -347,6 +348,7 @@ Buoy Id: {buoy.buoy_id}
 Posição (LAT, LON): {buoy.latitude}, {buoy.longitude}
 Local: {buoy.local}
 Metarea: {buoy.metarea_section}
+API Endpoint: {buoy.api_endpoint}
 
             """
             base += buoy_html
@@ -363,6 +365,7 @@ class JSONUtils:
 
         base = {"nome":f"{buoy.name}",
             "situacao":f"{buoy.mode}",
+            "endpoint":f"{buoy.api_endpoint}",
             "fundeio":{"latitude":float(buoy.latitude),
                 "longitude":float(buoy.longitude),
                 "local":buoy.local,
