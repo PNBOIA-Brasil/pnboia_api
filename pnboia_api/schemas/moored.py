@@ -67,6 +67,7 @@ class AvailableBuoysSchema(BaseModel):
     local: Optional[str]
     metarea_section: Optional[str]
     project_id: Optional[str]
+    api_endpoint: Optional[str]
 
     class Config:
         orm_mode = True
