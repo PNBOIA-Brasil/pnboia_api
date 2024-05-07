@@ -183,19 +183,23 @@ def obj_index(
             arguments = {"status=": True}
         elif not operative:
             arguments = {}
+
     buoys = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
     if response_type == 'html':
         final_response = HTMLUtils().compose_base_available_buoys(buoys=buoys)
         return HTMLResponse(final_response)
+
     elif response_type == "json":
         return buoys
+
     elif response_type == "txt":
         final_response = TXTUtils().compose_base_available_buoys(buoys=buoys)
         txt_response = Response(content=final_response)
         txt_response.headers["Content-Disposition"] = f'attachment; filename="pnboia_available_buoys.txt"'
         txt_response.headers["Content-Type"] = "text/csv"
         return txt_response
+
     else:
         raise HTTPException(
                 status_code=400,

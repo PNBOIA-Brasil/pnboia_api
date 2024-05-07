@@ -86,7 +86,9 @@ class HTMLUtils:
 
     def compose_buoy_history(self, register_buoys, buoy):
         buoy_situation_html = f"""
-        <p>Situação Atual: {buoy.mode}</p><br>
+        <p>Situação Atual: {buoy.mode}</p>
+        <p>API Endpoint: {buoy.api_endpoint}</p><br>
+
         <p><b>Histórico de Funcionamento:</b></p>
         """
         periods = "<ul>"
@@ -365,7 +367,7 @@ class JSONUtils:
 
         base = {"nome":f"{buoy.name}",
             "situacao":f"{buoy.mode}",
-            "endpoint":f"{buoy.api_endpoint}",
+            "api_endpoint":f"{buoy.api_endpoint}",
             "fundeio":{"latitude":float(buoy.latitude),
                 "longitude":float(buoy.longitude),
                 "local":buoy.local,
