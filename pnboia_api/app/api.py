@@ -28,11 +28,11 @@ async def root():
 # V1
 #######################
 
-app.include_router(moored.router, prefix="/v1/moored", tags=["moored"])
-app.include_router(drift.router, prefix="/v1/drift", tags=["drift"])
-app.include_router(qualified_data.router, prefix="/v1/qualified_data", tags=["qualified_data"])
-app.include_router(metadata.router, prefix="/v1/metadata", tags=["metadata"])
-app.include_router(quality_control.router, prefix="/v1/quality_control", tags=["quality_control"])
+app.include_router(moored.router, prefix="/moored", tags=["moored"])
+app.include_router(drift.router, prefix="/drift", tags=["drift"])
+app.include_router(qualified_data.router, prefix="/qualified_data", tags=["qualified_data"])
+app.include_router(metadata.router, prefix="/metadata", tags=["metadata"])
+app.include_router(quality_control.router, prefix="/quality_control", tags=["quality_control"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 #######################
