@@ -31,7 +31,7 @@ router = APIRouter()
 # QUALIFIED_DATA.QualifiedData ENDPOINT
 #######################
 
-@router.get("", status_code=200) #response_model=List[SetupBuoySchema]) #response_class=PlainTextResponse)
+@router.get("/metadata", status_code=200) #response_model=List[SetupBuoySchema]) #response_class=PlainTextResponse)
 def return_metadata(
             buoy_id: int,
             token: str,
@@ -110,6 +110,52 @@ def return_metadata(
                 detail=f"Invalid response type. ['html', 'json' or 'txt'] available.",
             )
 
+
+@router.get("/available_buoys", status_code=200, response_model=List[AvailableBuoysSchema])
+def obj_index(
+        token: str,
+        db: Session = Depends(get_db),
+        status:Optional[bool]=None,
+        order:Optional[bool]=False,
+        operative:Optional[bool]=False,
+        response_type:Optional[str]='html'
+    ) -> Any:
+
+    """
+    Fetch list of available buoys
+    """
+
+    user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
+
+    if status != None:
+        arguments = {'status=': status}
+    else:
+        if operative:
+            arguments = {"status=": True}
+        elif not operative:
+            arguments = {}
+
+    buoys = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
+
+    if response_type == 'html':
+        final_response = HTMLUtils().compose_base_available_buoys(buoys=buoys)
+        return HTMLResponse(final_response)
+
+    elif response_type == "json":
+        return buoys
+
+    elif response_type == "txt":
+        final_response = TXTUtils().compose_base_available_buoys(buoys=buoys)
+        txt_response = Response(content=final_response)
+        txt_response.headers["Content-Disposition"] = f'attachment; filename="pnboia_available_buoys.txt"'
+        txt_response.headers["Content-Type"] = "text/csv"
+        return txt_response
+
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Invalid response type. ['html', 'json' or 'txt'] available.",
+            )
 
 
 # @router.get("/pnboia", status_code=200, response_model=List[PNBoiaQualifiedSchema])
