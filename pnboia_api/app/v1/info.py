@@ -115,7 +115,6 @@ def return_metadata(
 def obj_index(
         token: str,
         db: Session = Depends(get_db),
-        status:Optional[bool]=None,
         order:Optional[bool]=False,
         operative:Optional[bool]=False,
         response_type:Optional[str]='html'
@@ -127,13 +126,11 @@ def obj_index(
 
     user = crud.crud_adm.user.verify(db=db, arguments={'token=': token})
 
-    if status != None:
-        arguments = {'status=': status}
-    else:
-        if operative:
-            arguments = {"status=": True}
-        elif not operative:
-            arguments = {}
+    arguments = {'open_data=': True}
+
+    if operative:
+        arguments.update({"status=": True})
+
 
     buoys = crud.crud_moored.buoy.index(db=db, order=order, arguments=arguments)
 
