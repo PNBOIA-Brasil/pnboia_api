@@ -393,7 +393,7 @@ def qualified_data_last(
     if open_data:
         arguments['open_data='] = True
 
-    result = crud.crud_qualified_data.qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
+    result = crud.crud_qualified_data.bmobr_qualified_data.last(db=db, arguments=arguments, last=last, buoy_sel=True)
 
     result1 = []
     for r in result:

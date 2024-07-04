@@ -1,6 +1,7 @@
 from pnboia_api.crud.base import CRUDBase
 from pnboia_api.models.qualified_data import *
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from typing import List
 from sqlalchemy import desc
