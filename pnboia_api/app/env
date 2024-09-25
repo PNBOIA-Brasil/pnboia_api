@@ -1,0 +1,9 @@
+DB_HOST=18.230.154.85
+DB_PORT=5432
+DB_NAME=pnboia
+DB_NAME_DEV=pnboia_dev
+DB_NAME_LOCAL=pnboia_teste_20240110
+DB_USER=henrique
+DB_PASSWORD=chm@mar11
+REMOBS_QC_DB_USR=remobs
+REMOBS_QC_DB=pnboia
