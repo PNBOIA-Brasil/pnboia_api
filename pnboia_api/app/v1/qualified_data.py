@@ -581,7 +581,39 @@ def qualified_data_last(
         # r1.flag_cond = r.flag_cond
         # r1.sss = r.sss
         # r1.flag_sss = r.flag_sss
-
+        # Map new fields
+        r1.wcdir1 = r.wcdir1
+        r1.flag_wcdir1 = r.flag_wcdir1
+        r1.wcspd1 = r.wcspd1
+        r1.flag_wcspd1 = r.flag_wcspd1
+        r1.wavgdir1 = r.wavgdir1
+        r1.flag_wavgdir1 = r.flag_wavgdir1
+        r1.wavgspd1 = r.wavgspd1
+        r1.flag_wavgspd1 = r.flag_wavgspd1
+        r1.gustdir1 = r.gustdir1
+        r1.flag_gustdir1 = r.flag_gustdir1
+        r1.wavgcdir1 = r.wavgcdir1
+        r1.flag_wavgcdir1 = r.flag_wavgcdir1
+        r1.wavgcspd1 = r.wavgcspd1
+        r1.flag_wavgcspd1 = r.flag_wavgcspd1
+        r1.gustcdir1 = r.gustcdir1
+        r1.flag_gustcdir1 = r.flag_gustcdir1
+        r1.gustc1 = r.gustc1
+        r1.flag_gustc1 = r.flag_gustc1
+        r1.windstat1 = r.windstat1
+        r1.flag_windstat1 = r.flag_windstat1
+        r1.pres_sl1 = r.pres_sl1
+        r1.flag_pres_sl1 = r.flag_pres_sl1
+        r1.rh1 = r.rh1
+        r1.flag_rh1 = r.flag_rh1
+        r1.atmp1 = r.atmp1
+        r1.flag_atmp1 = r.flag_atmp1
+        r1.precipt1 = r.precipt1
+        r1.flag_precipt1 = r.flag_precipt1
+        r1.pricipi1 = r.pricipi1
+        r1.flag_pricipi1 = r.flag_pricipi1
+        r1.srad1 = r.srad1
+        r1.flag_srad1 = r.flag_srad1
         result1.append(r1)
 
     return result1

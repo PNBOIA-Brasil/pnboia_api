@@ -180,6 +180,49 @@ class QualifiedDataPetrobrasBase(BaseModel):
     flag_ONDA_PERIODO_SENSOR2: Optional[int] = None
     ONDA_DIRECAOMED_SENSOR2: Optional[int] = None
     flag_ONDA_DIRECAOMED_SENSOR2: Optional[int] = None
+    wcdir1: Optional[int] = None
+    flag_wcdir1: Optional[int] = None
+    wcspd1: Optional[float] = None
+    flag_wcspd1: Optional[int] = None
+    wavgdir1: Optional[int] = None
+    flag_wavgdir1: Optional[int] = None
+    wavgspd1: Optional[float] = None
+    flag_wavgspd1: Optional[int] = None
+    gustdir1: Optional[int] = None
+    flag_gustdir1: Optional[int] = None
+    wavgcdir1: Optional[int] = None
+    flag_wavgcdir1: Optional[int] = None
+    wavgcspd1: Optional[float] = None
+    flag_wavgcspd1: Optional[int] = None
+    gustcdir1: Optional[int] = None
+    flag_gustcdir1: Optional[int] = None
+    gustc1: Optional[float] = None
+    flag_gustc1: Optional[int] = None
+    windstat1: Optional[float] = None
+    flag_windstat1: Optional[int] = None
+    pres_sl1: Optional[float] = None
+    flag_pres_sl1: Optional[int] = None
+    rh1: Optional[float] = None
+    flag_rh1: Optional[int] = None
+    atmp1: Optional[float] = None
+    flag_atmp1: Optional[int] = None
+    precipt1: Optional[float] = None
+    flag_precipt1: Optional[int] = None
+    pricipi1: Optional[float] = None
+    flag_pricipi1: Optional[int] = None
+    # precips1: Optional[str] = None
+    srad1: Optional[float] = None
+    flag_srad1: Optional[int] = None
+    # gpsheading1: Optional[float] = None
+    # gpsspeed1: Optional[float] = None
+    # tiltx1: Optional[float] = None
+    # tilty1: Optional[float] = None
+    # @validator('geom', pre=True,allow_reuse=True, always=True)
+    # def correct_geom_format(cls, v):
+    #     if not isinstance(v, WKBElement):
+    #         return None
+    #         # raise ValueError('must be a valid WKBE element')
+    #     return ewkb_to_wkt(v)
     # tm1: Optional[float] = None
     # flag_tm1: Optional[int] = None
     # pkdir1: Optional[float] = None
@@ -193,14 +236,6 @@ class QualifiedDataPetrobrasBase(BaseModel):
     # flag_sss: Optional[int] = None
     # flag_latitude: Optional[float] = None
     # flag_longitude: Optional[float] = None
-
-    # @validator('geom', pre=True,allow_reuse=True, always=True)
-    # def correct_geom_format(cls, v):
-    #     if not isinstance(v, WKBElement):
-    #         return None
-    #         # raise ValueError('must be a valid WKBE element')
-    #     return ewkb_to_wkt(v)
-
 
     class Config:
         orm_mode = True
@@ -349,7 +384,39 @@ class QualifiedDataBase(BaseModel):
     flag_sss: Optional[int] = None
     flag_latitude: Optional[float] = None
     flag_longitude: Optional[float] = None
-
+    wcdir1: Optional[int] = None
+    flag_wcdir1: Optional[int] = None
+    wcspd1: Optional[float] = None
+    flag_wcspd1: Optional[int] = None
+    wavgdir1: Optional[int] = None
+    flag_wavgdir1: Optional[int] = None
+    wavgspd1: Optional[float] = None
+    flag_wavgspd1: Optional[int] = None
+    gustdir1: Optional[int] = None
+    flag_gustdir1: Optional[int] = None
+    wavgcdir1: Optional[int] = None
+    flag_wavgcdir1: Optional[int] = None
+    wavgcspd1: Optional[float] = None
+    flag_wavgcspd1: Optional[int] = None
+    gustcdir1: Optional[int] = None
+    flag_gustcdir1: Optional[int] = None
+    gustc1: Optional[float] = None
+    flag_gustc1: Optional[int] = None
+    windstat1: Optional[float] = None
+    flag_windstat1: Optional[int] = None
+    pres_sl1: Optional[float] = None
+    flag_pres_sl1: Optional[int] = None
+    rh1: Optional[float] = None
+    flag_rh1: Optional[int] = None
+    atmp1: Optional[float] = None
+    flag_atmp1: Optional[int] = None
+    precipt1: Optional[float] = None
+    flag_precipt1: Optional[int] = None
+    pricipi1: Optional[float] = None
+    flag_pricipi1: Optional[int] = None
+    # precips1: Optional[str] = None
+    srad1: Optional[float] = None
+    flag_srad1: Optional[int] = None
     # @validator('geom', pre=True,allow_reuse=True, always=True)
     # def correct_geom_format(cls, v):
     #     if not isinstance(v, WKBElement):
@@ -504,6 +571,39 @@ class QualifiedDataBaseAlias(BaseModel):
     flag_sss: Optional[int] = None
     flag_latitude: Optional[float] = None
     flag_longitude: Optional[float] = None
+    wcdir1: Optional[int] = None
+    flag_wcdir1: Optional[int] = None
+    wcspd1: Optional[float] = None
+    flag_wcspd1: Optional[int] = None
+    wavgdir1: Optional[int] = None
+    flag_wavgdir1: Optional[int] = None
+    wavgspd1: Optional[float] = None
+    flag_wavgspd1: Optional[int] = None
+    gustdir1: Optional[int] = None
+    flag_gustdir1: Optional[int] = None
+    wavgcdir1: Optional[int] = None
+    flag_wavgcdir1: Optional[int] = None
+    wavgcspd1: Optional[float] = None
+    flag_wavgcspd1: Optional[int] = None
+    gustcdir1: Optional[int] = None
+    flag_gustcdir1: Optional[int] = None
+    gustc1: Optional[float] = None
+    flag_gustc1: Optional[int] = None
+    windstat1: Optional[float] = None
+    flag_windstat1: Optional[int] = None
+    pres_sl1: Optional[float] = None
+    flag_pres_sl1: Optional[int] = None
+    rh1: Optional[float] = None
+    flag_rh1: Optional[int] = None
+    atmp1: Optional[float] = None
+    flag_atmp1: Optional[int] = None
+    precipt1: Optional[float] = None
+    flag_precipt1: Optional[int] = None
+    pricipi1: Optional[float] = None
+    flag_pricipi1: Optional[int] = None
+    # precips1: Optional[str] = None
+    srad1: Optional[float] = None
+    flag_srad1: Optional[int] = None
 
     @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
@@ -661,7 +761,39 @@ class QualifiedDataBuoyBase(BaseModel):
     buoy: Optional[BuoyBase] = None
     flag_latitude: Optional[float] = None
     flag_longitude: Optional[float] = None
-
+    wcdir1: Optional[int] = None
+    flag_wcdir1: Optional[int] = None
+    wcspd1: Optional[float] = None
+    flag_wcspd1: Optional[int] = None
+    wavgdir1: Optional[int] = None
+    flag_wavgdir1: Optional[int] = None
+    wavgspd1: Optional[float] = None
+    flag_wavgspd1: Optional[int] = None
+    gustdir1: Optional[int] = None
+    flag_gustdir1: Optional[int] = None
+    wavgcdir1: Optional[int] = None
+    flag_wavgcdir1: Optional[int] = None
+    wavgcspd1: Optional[float] = None
+    flag_wavgcspd1: Optional[int] = None
+    gustcdir1: Optional[int] = None
+    flag_gustcdir1: Optional[int] = None
+    gustc1: Optional[float] = None
+    flag_gustc1: Optional[int] = None
+    windstat1: Optional[float] = None
+    flag_windstat1: Optional[int] = None
+    pres_sl1: Optional[float] = None
+    flag_pres_sl1: Optional[int] = None
+    rh1: Optional[float] = None
+    flag_rh1: Optional[int] = None
+    atmp1: Optional[float] = None
+    flag_atmp1: Optional[int] = None
+    precipt1: Optional[float] = None
+    flag_precipt1: Optional[int] = None
+    pricipi1: Optional[float] = None
+    flag_pricipi1: Optional[int] = None
+    # precips1: Optional[str] = None
+    srad1: Optional[float] = None
+    flag_srad1: Optional[int] = None
 
     @validator('geom', pre=True,allow_reuse=True, always=True)
     def correct_geom_format(cls, v):
@@ -880,8 +1012,50 @@ class BMOBrQualifiedSchema(BaseModel):
     flag_tp2: Optional[int] = None
     wvdir2: Optional[int] = None
     flag_wvdir2: Optional[int] = None
+    wcdir1: Optional[int] = None
+    flag_wcdir1: Optional[int] = None
+    wcspd1: Optional[float] = None
+    flag_wcspd1: Optional[int] = None
+    wavgdir1: Optional[int] = None
+    flag_wavgdir1: Optional[int] = None
+    wavgspd1: Optional[float] = None
+    flag_wavgspd1: Optional[int] = None
+    gustdir1: Optional[int] = None
+    flag_gustdir1: Optional[int] = None
+    wavgcdir1: Optional[int] = None
+    flag_wavgcdir1: Optional[int] = None
+    wavgcspd1: Optional[float] = None
+    flag_wavgcspd1: Optional[int] = None
+    gustcdir1: Optional[int] = None
+    flag_gustcdir1: Optional[int] = None
+    gustc1: Optional[float] = None
+    flag_gustc1: Optional[int] = None
+    windstat1: Optional[float] = None
+    flag_windstat1: Optional[int] = None
+    pres_sl1: Optional[float] = None
+    flag_pres_sl1: Optional[int] = None
+    rh1: Optional[float] = None
+    flag_rh1: Optional[int] = None
+    atmp1: Optional[float] = None
+    flag_atmp1: Optional[int] = None
+    precipt1: Optional[float] = None
+    flag_precipt1: Optional[int] = None
+    pricipi1: Optional[float] = None
+    flag_pricipi1: Optional[int] = None
+    # precips1: Optional[str] = None
+    srad1: Optional[float] = None
+    flag_srad1: Optional[int] = None
+    # gpsheading1: Optional[float] = None
+    # gpsspeed1: Optional[float] = None
+    # tiltx1: Optional[float] = None
+    # tilty1: Optional[float] = None
+    
 
 
+    
+
+
+    
     # @validator('geom', pre=True,allow_reuse=True, always=True)
     # def correct_geom_format(cls, v):
     #     if not isinstance(v, WKBElement):
