@@ -902,7 +902,7 @@ def qualified_data_index(
             filename = APIUtils().file_name_composition(buoy_name=buoy.name)
         else:
             filename = APIUtils().file_name_composition(buoy_name=buoy.name, start_date=start_date, end_date=end_date)
-            return APIUtils().csv_response(result=result, filename=filename)
+        return APIUtils().csv_response(result=result, filename=filename)
     elif response_type == "json":
         return result
     else:
