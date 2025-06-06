@@ -26,7 +26,7 @@ class APIUtils:
                 csv_writer.writerow(obj_dict)
 
             csv_response = Response(content=csv_data.getvalue())
-            csv_response.headers["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
+            csv_response.headers["Content-Disposition"] = f"attachment; filename=\"{filename}.csv\""
             csv_response.headers["Content-Type"] = "text/csv"
             # print(csv_response.body)
 
