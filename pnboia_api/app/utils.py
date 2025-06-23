@@ -10,28 +10,28 @@ class APIUtils:
         pass
 
     def csv_response(self, result:list, filename:str):
-        if filename:
-            first_object = result[0]
-            inspector = inspect(first_object.__class__)
-
-            cols_to_ignore = ['id','raw_id','geom']
-
-            column_names = [column.key for column in inspector.columns if column.key not in cols_to_ignore]
-            csv_data = StringIO()
-            csv_writer = csv.DictWriter(csv_data, fieldnames=column_names)
-            csv_writer.writeheader()
-
-            for r in result:
-                obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns if column.key not in cols_to_ignore}
-                csv_writer.writerow(obj_dict)
-
-            csv_response = Response(content=csv_data.getvalue())
-            csv_response.headers["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
-            csv_response.headers["Content-Type"] = "text/csv"
-            # print(csv_response.body)
-
-        else:
+        if not filename:
             return result
+            
+        first_object = result[0]
+        inspector = inspect(first_object.__class__)
+
+        cols_to_ignore = ['id','raw_id','geom']
+
+        column_names = [column.key for column in inspector.columns if column.key not in cols_to_ignore]
+        csv_data = StringIO()
+        csv_writer = csv.DictWriter(csv_data, fieldnames=column_names)
+        csv_writer.writeheader()
+
+        for r in result:
+            obj_dict = {column.key: getattr(r, column.key) for column in inspector.columns if column.key not in cols_to_ignore}
+            csv_writer.writerow(obj_dict)
+
+        csv_response = Response(content=csv_data.getvalue())
+        csv_response.headers["Content-Disposition"] = f"attachment; filename=\"{filename}.csv\""
+        csv_response.headers["Content-Type"] = "text/csv"
+        # print(csv_response.body)
+        
         return csv_response
 
     def file_name_composition(self, buoy_name:str, start_date:datetime=None, end_date:datetime=None):
