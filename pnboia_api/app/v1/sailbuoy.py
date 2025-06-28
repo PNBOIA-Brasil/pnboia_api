@@ -1,18 +1,40 @@
-from typing import List, Optional, Any
-from datetime import datetime, timedelta, date
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from typing import List, Optional, Dict, Any, Union
+from datetime import datetime, date
+from dateutil.parser import parse as parse_date
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 
-from pnboia_api.app.deps import get_db
+from pnboia_api.db.database import get_db
 from pnboia_api.schemas.sailbuoy import (
-    SailbuoyMetadataResponse, SailbuoyMetadataCreate, SailbuoyMetadataUpdate,
-    AutopilotDataResponse, AutopilotDataCreate, AutopilotDataUpdate,
-    DataloggerDataResponse, DataloggerDataCreate, DataloggerDataUpdate,
+    SailbuoyMetadataResponse,
+    AutopilotDataResponse,
+    DataloggerDataResponse,
+    SailbuoyMetadataCreate,
+    SailbuoyMetadataUpdate,
+    AutopilotDataCreate,
+    DataloggerDataCreate,
+    AutopilotDataUpdate,
+    DataloggerDataUpdate,
     PaginatedResponse
 )
-from pnboia_api import crud
-from pnboia_api.crud.crud_sailbuoy import autopilot_data_synoptic, datalogger_data_synoptic
+from pnboia_api.crud.crud_sailbuoy import (
+    sailbuoy_metadata,
+    autopilot_data,
+    datalogger_data,
+    autopilot_data_synoptic,
+    datalogger_data_synoptic,
+)
+from pnboia_api.models.sailbuoy import (
+    SailbuoyMetadata, 
+    AutopilotData, 
+    DataloggerData,
+    AutopilotDataSynoptic,
+    DataloggerDataSynoptic
+)
+from pnboia_api.core import verify_token
 
 # Security
 security = HTTPBearer()
@@ -47,8 +69,8 @@ def list_metadata(
     Retrieve sailbuoy metadata entries.
     """
     if active_only:
-        return crud.sailbuoy_metadata.get_active(db, skip=skip, limit=limit)
-    return crud.sailbuoy_metadata.index(db, skip=skip, limit=limit)
+        return sailbuoy_metadata.get_active(db, skip=skip, limit=limit)
+    return sailbuoy_metadata.index(db, skip=skip, limit=limit)
 
 @router.get("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def get_metadata(
@@ -59,9 +81,9 @@ def get_metadata(
     """
     Get a specific sailbuoy metadata entry by sailbuoy_id and name.
     """
-    db_metadata = db.query(crud.sailbuoy_metadata.model).filter(
-        (crud.sailbuoy_metadata.model.sailbuoy_id == sailbuoy_id) &
-        (crud.sailbuoy_metadata.model.name == name)
+    db_metadata = db.query(SailbuoyMetadata).filter(
+        SailbuoyMetadata.sailbuoy_id == sailbuoy_id,
+        SailbuoyMetadata.name == name
     ).first()
     if not db_metadata:
         raise HTTPException(status_code=404, detail="Sailbuoy metadata not found")
@@ -75,7 +97,7 @@ def create_metadata(
     """
     Create a new sailbuoy metadata entry.
     """
-    return crud.sailbuoy_metadata.create(db=db, obj_in=metadata)
+    return sailbuoy_metadata.create(db=db, obj_in=metadata)
 
 @router.put("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def update_metadata(
@@ -87,14 +109,14 @@ def update_metadata(
     """
     Update a sailbuoy metadata entry.
     """
-    db_metadata = db.query(crud.sailbuoy_metadata.model).filter(
-        (crud.sailbuoy_metadata.model.sailbuoy_id == sailbuoy_id) &
-        (crud.sailbuoy_metadata.model.name == name)
+    db_metadata = db.query(SailbuoyMetadata).filter(
+        SailbuoyMetadata.sailbuoy_id == sailbuoy_id,
+        SailbuoyMetadata.name == name
     ).first()
     if not db_metadata:
         raise HTTPException(status_code=404, detail="Sailbuoy metadata not found")
     
-    return crud.sailbuoy_metadata.update(db=db, id_pk=(sailbuoy_id, name), obj_in=metadata)
+    return sailbuoy_metadata.update(db=db, id_pk=db_metadata.id, obj_in=metadata)
 
 @router.delete("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def delete_metadata(
@@ -105,16 +127,16 @@ def delete_metadata(
     """
     Delete a sailbuoy metadata entry.
     """
-    db_metadata = db.query(crud.sailbuoy_metadata.model).filter(
-        (crud.sailbuoy_metadata.model.sailbuoy_id == sailbuoy_id) &
-        (crud.sailbuoy_metadata.model.name == name)
+    db_metadata = db.query(SailbuoyMetadata).filter(
+        SailbuoyMetadata.sailbuoy_id == sailbuoy_id,
+        SailbuoyMetadata.name == name
     ).first()
     if not db_metadata:
         raise HTTPException(status_code=404, detail="Sailbuoy metadata not found")
     
     db.delete(db_metadata)
     db.commit()
-    return {"ok": True}
+    return db_metadata
 
 #######################
 # AUTOPILOT DATA ENDPOINTS
@@ -124,15 +146,21 @@ def delete_metadata(
 def list_autopilot_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    start_date: Optional[Union[datetime, str]] = None,
+    end_date: Optional[Union[datetime, str]] = None,
     limit: int = 100,
 ):
     """
     Retrieve autopilot data with optional filtering.
     """
+    # Convert string dates to datetime objects if needed
+    if isinstance(start_date, str):
+        start_date = parse_date(start_date)
+    if isinstance(end_date, str):
+        end_date = parse_date(end_date)
+    
     if sailbuoy_id and start_date and end_date:
-        return crud.autopilot_data.get_by_time_range(
+        return autopilot_data.get_by_time_range(
             db, 
             sailbuoy_id=sailbuoy_id,
             start_time=start_date,
@@ -140,12 +168,12 @@ def list_autopilot_data(
             limit=limit
         )
     elif sailbuoy_id:
-        return crud.autopilot_data.get_latest(
+        return autopilot_data.get_latest(
             db, 
             sailbuoy_id=sailbuoy_id,
             limit=limit
         )
-    return crud.autopilot_data.index(db, limit=limit)
+    return autopilot_data.index(db, limit=limit)
 
 @router.post("/autopilot/", response_model=AutopilotDataResponse, dependencies=[Depends(verify_token)])
 def create_autopilot_data(
@@ -155,7 +183,7 @@ def create_autopilot_data(
     """
     Create new autopilot data.
     """
-    return crud.autopilot_data.create(db=db, obj_in=data)
+    return autopilot_data.create(db=db, obj_in=data)
 
 @router.get("/autopilot/latest/{sailbuoy_id}", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_autopilot_data(
@@ -166,7 +194,7 @@ def get_latest_autopilot_data(
     """
     Get the latest autopilot data for a specific sailbuoy.
     """
-    return crud.autopilot_data.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    return autopilot_data.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
 
 #######################
 # DATALOGGER DATA ENDPOINTS
@@ -176,15 +204,21 @@ def get_latest_autopilot_data(
 def list_datalogger_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    start_date: Optional[Union[datetime, str]] = None,
+    end_date: Optional[Union[datetime, str]] = None,
     limit: int = 100,
 ):
     """
     Retrieve datalogger data with optional filtering.
     """
+    # Convert string dates to datetime objects if needed
+    if isinstance(start_date, str):
+        start_date = parse_date(start_date)
+    if isinstance(end_date, str):
+        end_date = parse_date(end_date)
+    
     if sailbuoy_id and start_date and end_date:
-        return crud.datalogger_data.get_by_time_range(
+        return datalogger_data.get_by_time_range(
             db, 
             sailbuoy_id=sailbuoy_id,
             start_time=start_date,
@@ -192,12 +226,12 @@ def list_datalogger_data(
             limit=limit
         )
     elif sailbuoy_id:
-        return crud.datalogger_data.get_latest(
+        return datalogger_data.get_latest(
             db, 
             sailbuoy_id=sailbuoy_id,
             limit=limit
         )
-    return crud.datalogger_data.index(db, limit=limit)
+    return datalogger_data.index(db, limit=limit)
 
 @router.post("/datalogger/", response_model=DataloggerDataResponse, dependencies=[Depends(verify_token)])
 def create_datalogger_data(
@@ -207,7 +241,7 @@ def create_datalogger_data(
     """
     Create new datalogger data.
     """
-    return crud.datalogger_data.create(db=db, obj_in=data)
+    return datalogger_data.create(db=db, obj_in=data)
 
 @router.get("/datalogger/latest/{sailbuoy_id}", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_datalogger_data(
@@ -218,7 +252,7 @@ def get_latest_datalogger_data(
     """
     Get the latest datalogger data for a specific sailbuoy.
     """
-    return crud.datalogger_data.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    return datalogger_data.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
 
 
 #######################
@@ -236,16 +270,27 @@ def list_autopilot_synoptic_data(
     """
     Retrieve synoptic autopilot data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
     """
-    query = db.query(autopilot_data_synoptic.model)
+    query = db.query(AutopilotDataSynoptic)
     
     if sailbuoy_id:
-        query = query.filter(autopilot_data_synoptic.model.sailbuoy_id == sailbuoy_id)
+        query = query.filter(AutopilotDataSynoptic.sailbuoy_id == sailbuoy_id)
     if start_date:
-        query = query.filter(autopilot_data_synoptic.model.sailbuoy_time >= start_date)
+        query = query.filter(AutopilotDataSynoptic.sailbuoy_time >= start_date)
     if end_date:
-        query = query.filter(autopilot_data_synoptic.model.sailbuoy_time <= end_date)
+        query = query.filter(AutopilotDataSynoptic.sailbuoy_time <= end_date)
     
-    return query.order_by(autopilot_data_synoptic.model.sailbuoy_time.desc()).limit(limit).all()
+    results = query.order_by(desc(AutopilotDataSynoptic.sailbuoy_time)).limit(limit).all()
+    # Convert to response model
+    return [
+        AutopilotDataResponse(
+            **{
+                k: getattr(row, k)
+                for k in AutopilotDataResponse.__annotations__.keys()
+                if hasattr(row, k)
+            }
+        )
+        for row in results
+    ]
 
 @router.get("/datalogger/synoptic", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
 def list_datalogger_synoptic_data(
@@ -258,18 +303,29 @@ def list_datalogger_synoptic_data(
     """
     Retrieve synoptic datalogger data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
     """
-    query = db.query(datalogger_data_synoptic.model)
+    query = db.query(DataloggerDataSynoptic)
     
     if sailbuoy_id:
-        query = query.filter(datalogger_data_synoptic.model.sailbuoy_id == sailbuoy_id)
+        query = query.filter(DataloggerDataSynoptic.sailbuoy_id == sailbuoy_id)
     if start_date:
-        query = query.filter(datalogger_data_synoptic.model.sailbuoy_time >= start_date)
+        query = query.filter(DataloggerDataSynoptic.sailbuoy_time >= start_date)
     if end_date:
-        query = query.filter(datalogger_data_synoptic.model.sailbuoy_time <= end_date)
+        query = query.filter(DataloggerDataSynoptic.sailbuoy_time <= end_date)
     
-    return query.order_by(datalogger_data_synoptic.model.sailbuoy_time.desc()).limit(limit).all()
+    results = query.order_by(desc(DataloggerDataSynoptic.sailbuoy_time)).limit(limit).all()
+    # Convert to response model
+    return [
+        DataloggerDataResponse(
+            **{
+                k: getattr(row, k)
+                for k in DataloggerDataResponse.__annotations__.keys()
+                if hasattr(row, k)
+            }
+        )
+        for row in results
+    ]
 
-@router.get("/autopilot/synoptic/latest/{sailbuoy_id}", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
+@router.get("/autopilot/synoptic/latest", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_autopilot_synoptic_data(
     sailbuoy_id: str,
     limit: int = Query(1, ge=1, le=1000),
@@ -278,9 +334,20 @@ def get_latest_autopilot_synoptic_data(
     """
     Get the latest synoptic autopilot data for a specific sailbuoy.
     """
-    return autopilot_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    results = autopilot_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    # Convert to response model
+    return [
+        AutopilotDataResponse(
+            **{
+                k: getattr(row, k)
+                for k in AutopilotDataResponse.__annotations__.keys()
+                if hasattr(row, k)
+            }
+        )
+        for row in (results if results else [])
+    ]
 
-@router.get("/datalogger/synoptic/latest/{sailbuoy_id}", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
+@router.get("/datalogger/synoptic/latest", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_datalogger_synoptic_data(
     sailbuoy_id: str,
     limit: int = Query(1, ge=1, le=1000),
@@ -289,4 +356,15 @@ def get_latest_datalogger_synoptic_data(
     """
     Get the latest synoptic datalogger data for a specific sailbuoy.
     """
-    return datalogger_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    results = datalogger_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+    # Convert to response model
+    return [
+        DataloggerDataResponse(
+            **{
+                k: getattr(row, k)
+                for k in DataloggerDataResponse.__annotations__.keys()
+                if hasattr(row, k)
+            }
+        )
+        for row in (results if results else [])
+    ]

@@ -194,13 +194,61 @@ class DataloggerData(Base):
     )
 
 
-class AutopilotDataSynoptic(AutopilotData):
+class AutopilotDataSynoptic(Base):
     """Model for autopilot synoptic data view (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)"""
     __tablename__ = 'autopilot_data_synoptic'
-    __table_args__ = {'schema': 'sailbuoy'}
+    __table_args__ = (
+        {'schema': 'sailbuoy', 'info': {'is_view': True}}
+    )
+    
+    # Explicitly define the columns that exist in the view
+    id = Column(Integer, primary_key=True)
+    email_subject = Column(Text, comment='Original email subject line')
+    email_datetime = Column(DateTime(timezone=True), comment='When the email was received')
+    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
+    lat = Column(Float, comment='Latitude in decimal degrees')
+    long = Column(Float, comment='Longitude in decimal degrees')
+    # Add all other columns that exist in the view...
+    sailbuoy_id = Column(String(10), comment='Reference to sailbuoy metadata')
+    
+    # Add relationship to metadata
+    sailbuoy = relationship(
+        "SailbuoyMetadata",
+        primaryjoin="AutopilotDataSynoptic.sailbuoy_id == SailbuoyMetadata.sailbuoy_id",
+        foreign_keys=[sailbuoy_id],
+        viewonly=True
+    )
+    
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
-class DataloggerDataSynoptic(DataloggerData):
+class DataloggerDataSynoptic(Base):
     """Model for datalogger synoptic data view (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)"""
     __tablename__ = 'datalogger_data_synoptic'
-    __table_args__ = {'schema': 'sailbuoy'}
+    __table_args__ = (
+        {'schema': 'sailbuoy', 'info': {'is_view': True}}
+    )
+    
+    # Explicitly define the columns that exist in the view
+    id = Column(Integer, primary_key=True)
+    email_subject = Column(Text, comment='Original email subject line')
+    email_datetime = Column(DateTime(timezone=True), comment='When the email was received')
+    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
+    lat = Column(Float, comment='Latitude in decimal degrees')
+    long = Column(Float, comment='Longitude in decimal degrees')
+    # Add all other columns that exist in the view...
+    sailbuoy_id = Column(String(10), comment='Reference to sailbuoy metadata')
+    
+    # Add relationship to metadata
+    sailbuoy = relationship(
+        "SailbuoyMetadata",
+        primaryjoin="DataloggerDataSynoptic.sailbuoy_id == SailbuoyMetadata.sailbuoy_id",
+        foreign_keys=[sailbuoy_id],
+        viewonly=True
+    )
+    
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)

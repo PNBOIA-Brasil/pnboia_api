@@ -215,14 +215,30 @@ autopilot_data = CRUDAutopilotData(AutopilotData)
 datalogger_data = CRUDDataloggerData(DataloggerData)
 
 # Synoptic data CRUD operations
-class CRUDAutopilotDataSynoptic(CRUDAutopilotData):
+class CRUDAutopilotDataSynoptic(CRUDBase[AutopilotDataSynoptic]):
     """CRUD operations for autopilot synoptic data"""
-    pass
+    def get_latest(self, db: Session, *, sailbuoy_id: str, limit: int = 1) -> List[AutopilotDataSynoptic]:
+        """Get the latest synoptic autopilot data for a sailbuoy"""
+        return (
+            db.query(self.model)
+            .filter(self.model.sailbuoy_id == sailbuoy_id)
+            .order_by(desc(self.model.sailbuoy_time))
+            .limit(limit)
+            .all()
+        )
 
-class CRUDDataloggerDataSynoptic(CRUDDataloggerData):
+class CRUDDataloggerDataSynoptic(CRUDBase[DataloggerDataSynoptic]):
     """CRUD operations for datalogger synoptic data"""
-    pass
+    def get_latest(self, db: Session, *, sailbuoy_id: str, limit: int = 1) -> List[DataloggerDataSynoptic]:
+        """Get the latest synoptic datalogger data for a sailbuoy"""
+        return (
+            db.query(self.model)
+            .filter(self.model.sailbuoy_id == sailbuoy_id)
+            .order_by(desc(self.model.sailbuoy_time))
+            .limit(limit)
+            .all()
+        )
 
-# Initialize the CRUD instances for synoptic data
+# Create instances of the synoptic data CRUD classes
 autopilot_data_synoptic = CRUDAutopilotDataSynoptic(AutopilotDataSynoptic)
 datalogger_data_synoptic = CRUDDataloggerDataSynoptic(DataloggerDataSynoptic)
