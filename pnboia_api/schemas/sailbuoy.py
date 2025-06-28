@@ -56,8 +56,8 @@ class SailbuoyMetadataInDB(SailbuoyMetadataBase):
 # Autopilot Data Schemas
 class AutopilotDataBase(SailbuoyBase):
     """Base schema for autopilot data."""
-    email_subject: Optional[str] = None
-    email_datetime: Optional[datetime] = None
+    email_subject: Optional[str] = Field(None, description="Email subject line from the sailbuoy")
+    email_datetime: Optional[datetime] = Field(None, description="Timestamp when the email was received")
     sailbuoy_time: datetime = Field(..., description="Timestamp from the sailbuoy")
     
     # Location and basic telemetry
@@ -66,16 +66,63 @@ class AutopilotDataBase(SailbuoyBase):
     ttff: Optional[int] = Field(None, ge=0, description="Time to first fix in seconds")
     warning: Optional[int] = Field(None, description="Warning status")
     count: Optional[int] = Field(None, description="Message counter")
+    leak: Optional[int] = Field(None, description="Leak detection status")
+    bigleak: Optional[int] = Field(None, description="Major leak detection status")
+    commands: Optional[int] = Field(None, description="Command status")
     
     # Power and environment
     i: Optional[float] = Field(None, description="Current in Amperes")
     v: Optional[float] = Field(None, description="Voltage in Volts")
     temperature: Optional[float] = Field(None, description="Internal temperature in °C")
+    pressure: Optional[float] = Field(None, description="Atmospheric pressure in hPa")
+    humidity: Optional[float] = Field(None, ge=0, le=100, description="Relative humidity in %")
+    
+    # System status
+    transmissiontries: Optional[int] = Field(None, ge=0, description="Number of transmission attempts")
+    ontimesec: Optional[int] = Field(None, ge=0, description="Uptime in seconds")
     
     # Navigation
     velocity: Optional[float] = Field(None, ge=0, description="Speed over ground in m/s")
     heading: Optional[int] = Field(None, ge=0, le=359, description="Heading in degrees")
-    winddirection: Optional[int] = Field(None, ge=0, le=359, description="Wind direction in degrees")
+    trackdistance: Optional[int] = Field(None, description="Distance to track in meters")
+    waypointdirection: Optional[int] = Field(None, ge=0, le=359, description="Direction to waypoint in degrees")
+    trackradius: Optional[int] = Field(None, description="Track radius in meters")
+    winddirection: Optional[int] = Field(None, ge=0, description="Wind direction in degrees (will be normalized to 0-359)")
+    
+    # Autopilot settings
+    automodeenabled: Optional[int] = Field(None, description="Auto mode status")
+    switchwaypointmodeenabled: Optional[int] = Field(None, description="Waypoint switching mode status")
+    nextautopilottack: Optional[int] = Field(None, description="Next tack direction")
+    currenttack: Optional[int] = Field(None, description="Current tack direction")
+    
+    # Additional telemetry
+    t1: Optional[int] = Field(None, description="Telemetry field 1")
+    t2: Optional[str] = Field(None, description="Telemetry field 2")
+    t3: Optional[str] = Field(None, description="Telemetry field 3")
+    
+    # Navigation status
+    wpreached: Optional[int] = Field(None, description="Waypoint reached status")
+    withintrackradius: Optional[int] = Field(None, description="Within track radius status")
+    sailatportbow: Optional[int] = Field(None, description="Sail at port bow status")
+    sailatport: Optional[int] = Field(None, description="Sail at port status")
+    sailincentre: Optional[int] = Field(None, description="Sail in center status")
+    sailatstarboard: Optional[int] = Field(None, description="Sail at starboard status")
+    sailatstarboardbow: Optional[int] = Field(None, description="Sail at starboard bow status")
+    
+    # Additional navigation
+    wpdir: Optional[int] = Field(None, ge=0, le=359, description="Waypoint direction in degrees")
+    rang: Optional[int] = Field(None, description="Range to waypoint in meters")
+    rcnt: Optional[int] = Field(None, description="Message counter")
+    cang: Optional[int] = Field(None, description="Course and ground track angle")
+    tk_age: Optional[int] = Field(None, description="Track age in seconds")
+    raw_email_body: Optional[str] = Field(None, description="Raw email body content")
+    
+    # Validator to handle wind direction values > 359
+    @validator('winddirection', 'heading', 'waypointdirection', 'wpdir')
+    def normalize_degrees(cls, v):
+        if v is not None and isinstance(v, (int, float)):
+            return int(v) % 360
+        return v
 
 class AutopilotDataCreate(AutopilotDataBase):
     """Schema for creating new autopilot data."""
@@ -159,20 +206,123 @@ class SailbuoyMetadataResponse(SailbuoyMetadataInDB):
     pass
 
 # New response models that match our database schema
-class AutopilotDataResponse(AutopilotDataBase):
+class AutopilotDataResponse(SailbuoyBase):
     """Response model for autopilot data."""
     id: int
-    sailbuoy_id: str
-    email_datetime: Optional[datetime] = None
+    sailbuoy_time: datetime = Field(..., description="Timestamp from the sailbuoy")
+    
+    # Location and basic telemetry
+    lat: Optional[float] = Field(None, ge=-90, le=90, description="Latitude in decimal degrees")
+    long: Optional[float] = Field(None, ge=-180, le=180, description="Longitude in decimal degrees")
+    ttff: Optional[int] = Field(None, ge=0, description="Time to first fix in seconds")
+    warning: Optional[int] = Field(None, description="Warning status")
+    count: Optional[int] = Field(None, description="Message counter")
+    leak: Optional[int] = Field(None, description="Leak detection status")
+    bigleak: Optional[int] = Field(None, description="Major leak detection status")
+    commands: Optional[int] = Field(None, description="Command status")
+    
+    # Power and environment
+    i: Optional[float] = Field(None, description="Current in Amperes")
+    v: Optional[float] = Field(None, description="Voltage in Volts")
+    temperature: Optional[float] = Field(None, description="Internal temperature in °C")
+    pressure: Optional[float] = Field(None, description="Atmospheric pressure in hPa")
+    humidity: Optional[float] = Field(None, ge=0, le=100, description="Relative humidity in %")
+    
+    # System status
+    transmissiontries: Optional[int] = Field(None, ge=0, description="Number of transmission attempts")
+    ontimesec: Optional[int] = Field(None, ge=0, description="Uptime in seconds")
+    
+    # Navigation
+    velocity: Optional[float] = Field(None, ge=0, description="Speed over ground in m/s")
+    heading: Optional[int] = Field(None, ge=0, le=359, description="Heading in degrees")
+    trackdistance: Optional[int] = Field(None, description="Distance to track in meters")
+    waypointdirection: Optional[int] = Field(None, ge=0, le=359, description="Direction to waypoint in degrees")
+    trackradius: Optional[int] = Field(None, description="Track radius in meters")
+    winddirection: Optional[int] = Field(None, ge=0, description="Wind direction in degrees")
+    
+    # Autopilot settings
+    automodeenabled: Optional[int] = Field(None, description="Auto mode status")
+    switchwaypointmodeenabled: Optional[int] = Field(None, description="Waypoint switching mode status")
+    nextautopilottack: Optional[int] = Field(None, description="Next tack direction")
+    currenttack: Optional[int] = Field(None, description="Current tack direction")
+    
+    # Additional telemetry
+    t1: Optional[int] = Field(None, description="Telemetry field 1")
+    t2: Optional[str] = Field(None, description="Telemetry field 2")
+    t3: Optional[str] = Field(None, description="Telemetry field 3")
+    
+    # Navigation status
+    wpreached: Optional[int] = Field(None, description="Waypoint reached status")
+    withintrackradius: Optional[int] = Field(None, description="Within track radius status")
+    sailatportbow: Optional[int] = Field(None, description="Sail at port bow status")
+    sailatport: Optional[int] = Field(None, description="Sail at port status")
+    sailincentre: Optional[int] = Field(None, description="Sail in center status")
+    sailatstarboard: Optional[int] = Field(None, description="Sail at starboard status")
+    sailatstarboardbow: Optional[int] = Field(None, description="Sail at starboard bow status")
+    
+    # Additional navigation
+    wpdir: Optional[int] = Field(None, ge=0, le=359, description="Waypoint direction in degrees")
+    rang: Optional[int] = Field(None, description="Range to waypoint in meters")
+    rcnt: Optional[int] = Field(None, description="Message counter")
+    cang: Optional[int] = Field(None, description="Course and ground track angle")
+    tk_age: Optional[int] = Field(None, description="Track age in seconds")
     
     class Config(SailbuoyBase.Config):
         pass
 
-class DataloggerDataResponse(DataloggerDataBase):
+class DataloggerDataResponse(SailbuoyBase):
     """Response model for datalogger data."""
     id: int
-    sailbuoy_id: str
-    email_datetime: Optional[datetime] = None
+    sailbuoy_time: datetime = Field(..., description="Timestamp from the sailbuoy")
+    
+    # Location and basic telemetry
+    lat: Optional[float] = Field(None, ge=-90, le=90, description="Latitude in decimal degrees")
+    long: Optional[float] = Field(None, ge=-180, le=180, description="Longitude in decimal degrees")
+    ttff: Optional[int] = Field(None, ge=0, description="Time to first fix in seconds")
+    
+    # System status
+    count: Optional[int] = Field(None, description="Message counter")
+    commands: Optional[int] = Field(None, description="Command status")
+    txtries: Optional[int] = Field(None, description="Transmission attempts count")
+    ont: Optional[int] = Field(None, description="On time in minutes")
+    diskused: Optional[int] = Field(None, description="Disk space used in bytes")
+    
+    # Power and environment
+    i: Optional[float] = Field(None, description="Current in Amperes")
+    v: Optional[float] = Field(None, description="Voltage in Volts")
+    temperature: Optional[float] = Field(None, description="Internal temperature in °C")
+    
+    # CTD data
+    cttemp: Optional[float] = Field(None, description="CTD temperature in °C")
+    ctcond: Optional[float] = Field(None, description="CTD conductivity")
+    
+    # Environmental data
+    refined_fuel: Optional[float] = Field(None, description="Refined fuel measurement")
+    crudeoil: Optional[float] = Field(None, description="Crude oil measurement")
+    turbidity: Optional[float] = Field(None, description="Water turbidity measurement")
+    c3_temperature: Optional[float] = Field(None, description="C3 sensor temperature")
+    
+    # Wave data
+    hs: Optional[float] = Field(None, ge=0, description="Significant wave height in meters")
+    ts: Optional[float] = Field(None, ge=0, description="Significant wave period in seconds")
+    t0: Optional[float] = Field(None, description="Zero-upcrossing wave period")
+    hmax: Optional[float] = Field(None, description="Maximum wave height in meters")
+    
+    # Wind data
+    ft_winddir: Optional[float] = Field(None, ge=0, le=360, description="Wind direction from Fastrak sensor in degrees")
+    ft_windspeed: Optional[float] = Field(None, ge=0, description="Wind speed from Fastrak sensor in m/s")
+    ft_windgust: Optional[float] = Field(None, ge=0, description="Wind gust speed from Fastrak sensor in m/s")
+    
+    # Error information
+    err: Optional[str] = Field(None, description="Error message if any")
+    
+    # Nortek sensor data
+    nortekstatus: Optional[int] = Field(None, description="Nortek sensor status code")
+    nortekvalidcells: Optional[int] = Field(None, description="Number of valid cells from Nortek")
+    nortekcells: Optional[int] = Field(None, description="Total number of cells from Nortek")
+    nortekonsec: Optional[int] = Field(None, description="Nortek sensor on time in seconds")
+    nortekspeed: Optional[float] = Field(None, description="Current speed from Nortek sensor in m/s")
+    nortekdirection: Optional[float] = Field(None, ge=0, le=360, description="Current direction from Nortek sensor in degrees")
     
     class Config(SailbuoyBase.Config):
         pass

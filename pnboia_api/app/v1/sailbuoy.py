@@ -1,6 +1,7 @@
 from typing import List, Optional, Any
 from datetime import datetime, timedelta, date
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from pnboia_api.app.deps import get_db
@@ -12,13 +13,29 @@ from pnboia_api.schemas.sailbuoy import (
 )
 from pnboia_api import crud
 
+# Security
+security = HTTPBearer()
+
+# Valid tokens (you can move this to a database query if needed)
+VALID_TOKENS = ["HSSl1OJ-mo4vOX6eVXLG"]  # Add other valid tokens here
+
+# Token verification
+def verify_token(token: str = Query(..., description="API token for authentication")):
+    """Verify the token from query parameters"""
+    if token not in VALID_TOKENS:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing token",
+        )
+    return True
+
 router = APIRouter()
 
 #######################
 # SAILBUOY METADATA ENDPOINTS
 #######################
 
-@router.get("/metadata", response_model=List[SailbuoyMetadataResponse])
+@router.get("/metadata", response_model=List[SailbuoyMetadataResponse], dependencies=[Depends(verify_token)])
 def list_metadata(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -32,7 +49,7 @@ def list_metadata(
         return crud.sailbuoy_metadata.get_active(db, skip=skip, limit=limit)
     return crud.sailbuoy_metadata.index(db, skip=skip, limit=limit)
 
-@router.get("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse)
+@router.get("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def get_metadata(
     sailbuoy_id: str,
     name: str,
@@ -49,7 +66,7 @@ def get_metadata(
         raise HTTPException(status_code=404, detail="Sailbuoy metadata not found")
     return db_metadata
 
-@router.post("/metadata/", response_model=SailbuoyMetadataResponse)
+@router.post("/metadata/", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def create_metadata(
     metadata: SailbuoyMetadataCreate,
     db: Session = Depends(get_db),
@@ -59,7 +76,7 @@ def create_metadata(
     """
     return crud.sailbuoy_metadata.create(db=db, obj_in=metadata)
 
-@router.put("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse)
+@router.put("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def update_metadata(
     sailbuoy_id: str,
     name: str,
@@ -78,7 +95,7 @@ def update_metadata(
     
     return crud.sailbuoy_metadata.update(db=db, id_pk=(sailbuoy_id, name), obj_in=metadata)
 
-@router.delete("/metadata/{sailbuoy_id}/{name}")
+@router.delete("/metadata/{sailbuoy_id}/{name}", response_model=SailbuoyMetadataResponse, dependencies=[Depends(verify_token)])
 def delete_metadata(
     sailbuoy_id: str,
     name: str,
@@ -102,7 +119,7 @@ def delete_metadata(
 # AUTOPILOT DATA ENDPOINTS
 #######################
 
-@router.get("/autopilot/", response_model=List[AutopilotDataResponse])
+@router.get("/autopilot/", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
 def list_autopilot_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
@@ -129,7 +146,7 @@ def list_autopilot_data(
         )
     return crud.autopilot_data.index(db, limit=limit)
 
-@router.post("/autopilot/", response_model=AutopilotDataResponse)
+@router.post("/autopilot/", response_model=AutopilotDataResponse, dependencies=[Depends(verify_token)])
 def create_autopilot_data(
     data: AutopilotDataCreate,
     db: Session = Depends(get_db),
@@ -139,7 +156,7 @@ def create_autopilot_data(
     """
     return crud.autopilot_data.create(db=db, obj_in=data)
 
-@router.get("/autopilot/latest", response_model=List[AutopilotDataResponse])
+@router.get("/autopilot/latest/{sailbuoy_id}", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_autopilot_data(
     sailbuoy_id: str,
     limit: int = Query(1, ge=1, le=1000),
@@ -154,7 +171,7 @@ def get_latest_autopilot_data(
 # DATALOGGER DATA ENDPOINTS
 #######################
 
-@router.get("/datalogger/", response_model=List[DataloggerDataResponse])
+@router.get("/datalogger/", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
 def list_datalogger_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
@@ -181,7 +198,7 @@ def list_datalogger_data(
         )
     return crud.datalogger_data.index(db, limit=limit)
 
-@router.post("/datalogger/", response_model=DataloggerDataResponse)
+@router.post("/datalogger/", response_model=DataloggerDataResponse, dependencies=[Depends(verify_token)])
 def create_datalogger_data(
     data: DataloggerDataCreate,
     db: Session = Depends(get_db),
@@ -191,7 +208,7 @@ def create_datalogger_data(
     """
     return crud.datalogger_data.create(db=db, obj_in=data)
 
-@router.get("/datalogger/latest", response_model=List[DataloggerDataResponse])
+@router.get("/datalogger/latest/{sailbuoy_id}", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
 def get_latest_datalogger_data(
     sailbuoy_id: str,
     limit: int = Query(1, ge=1, le=1000),
