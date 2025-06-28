@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, SmallInteger, String, Text, text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Text, text, Boolean, Float
 from geoalchemy2.types import Geometry
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,25 +7,27 @@ from sqlalchemy.ext.declarative import declarative_base
 # Use the existing Base from models/__init__.py
 from . import Base
 
-class SailbuoyBuoy(Base):
+class SailbuoyMetadata(Base):
     """
-    Table to store sailbuoy buoy information.
-    Similar to the Buoy model in moored.py but specific to sailbuoys.
+    Table to store sailbuoy metadata information.
     """
-    __tablename__ = 'buoys'
-    __table_args__ = {'schema': 'sailbuoy', 'comment': 'Table containing sailbuoy information.'}
+    __tablename__ = 'metadata'
+    __table_args__ = {'schema': 'sailbuoy', 'comment': 'Table containing sailbuoy metadata information.'}
 
-    buoy_id = Column(SmallInteger, primary_key=True, comment='Buoy identification ID.')
-    name = Column(String(30), comment='Name assigned to the sailbuoy.')
-    imei = Column(String(15), comment='IMEI number of the sailbuoy.')
-    model = Column(String(50), comment='Model of the sailbuoy.')
+    sailbuoy_id = Column(String(10), primary_key=True, comment='Sailbuoy identification ID (e.g., SB2432).')
+    name = Column(String(30), primary_key=True, comment='Component name (e.g., SB2432A for Autopilot, SB2432D for Datalogger).')
+    imei = Column(String(15), nullable=False, comment='IMEI number of the sailbuoy component.')
+    model = Column(String(30), comment='Model of the sailbuoy component.')
     deploy_date = Column(DateTime, comment='Date when the sailbuoy was deployed.')
     last_date_time = Column(DateTime, comment='Last recorded datetime from the sailbuoy.')
     is_active = Column(Boolean, default=True, comment='Whether the sailbuoy is currently active.')
+    created_at = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'), comment='When this record was created.')
+    updated_at = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'), 
+                        comment='When this record was last updated.')
 
     # Relationships
-    autopilot_data = relationship("AutopilotData", back_populates="buoy")
-    datalogger_data = relationship("DataloggerData", back_populates="buoy")
+    autopilot_data = relationship("AutopilotData", back_populates="sailbuoy")
+    datalogger_data = relationship("DataloggerData", back_populates="sailbuoy")
 
 
 class AutopilotData(Base):
@@ -36,37 +38,77 @@ class AutopilotData(Base):
     __table_args__ = {'schema': 'sailbuoy', 'comment': 'Navigation and control data from sailbuoy autopilot.'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('sailbuoy.autopilot_data_id_seq'::regclass)"))
-    buoy_id = Column(ForeignKey('sailbuoy.buoys.buoy_id', onupdate='CASCADE'), nullable=False, comment='ID of the sailbuoy.')
-    date_time = Column(DateTime, nullable=False, index=True, comment='Timestamp of the data record in UTC.')
+    email_subject = Column(Text, comment='Original email subject line')
+    email_datetime = Column(DateTime(timezone=True), server_default=text('now()'), comment='When the email was received')
+    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
     
-    # Navigation data
-    latitude = Column(Numeric(10, 6), comment='Latitude in decimal degrees (WGS84).')
-    longitude = Column(Numeric(10, 6), comment='Longitude in decimal degrees (WGS84).')
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), 
-                 Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', 
-                         persisted=True), 
-                 comment='Spatial point geometry (x, y) - (Longitude, Latitude)')
+    # Location and basic telemetry
+    lat = Column(Float, comment='Latitude in decimal degrees')
+    long = Column(Float, comment='Longitude in decimal degrees')
+    ttff = Column(Integer, comment='Time to first fix in seconds')
+    warning = Column(Integer, comment='Warning status')
+    count = Column(Integer, comment='Message counter')
+    leak = Column(Integer, comment='Leak detection status')
+    bigleak = Column(Integer, comment='Major leak detection status')
+    commands = Column(Integer, comment='Command counter')
     
-    # Vehicle state
-    heading = Column(Numeric(5, 2), comment='Compass heading in degrees (0-360).')
-    speed = Column(Numeric(5, 2), comment='Speed over ground in m/s.')
-    distance = Column(Numeric(10, 2), comment='Total distance traveled in meters.')
+    # Power and environment
+    i = Column(Float, comment='Current in Amperes')
+    v = Column(Float, comment='Voltage in Volts')
+    temperature = Column(Float, comment='Internal temperature in °C')
+    pressure = Column(Float, comment='Atmospheric pressure')
+    humidity = Column(Float, comment='Relative humidity in %')
     
-    # Environmental data
-    wind_speed = Column(Numeric(5, 2), comment='Wind speed in m/s.')
-    wind_direction = Column(Numeric(5, 2), comment='Wind direction in degrees (0-360).')
-    battery_voltage = Column(Numeric(5, 2), comment='Battery voltage in Volts.')
+    # Navigation
+    transmissiontries = Column(Integer, comment='Number of transmission attempts')
+    ontimesec = Column(Integer, comment='Uptime in seconds')
+    velocity = Column(Float, comment='Speed over ground in m/s')
+    heading = Column(Integer, comment='Heading in degrees (0-359)')
+    trackdistance = Column(Integer, comment='Track distance')
+    waypointdirection = Column(Integer, comment='Direction to waypoint')
+    trackradius = Column(Integer, comment='Track radius')
+    winddirection = Column(Integer, comment='Wind direction in degrees')
     
-    # Mission data
-    waypoint_id = Column(SmallInteger, comment='Current waypoint ID.')
-    distance_to_waypoint = Column(Numeric(10, 2), comment='Distance to next waypoint in meters.')
+    # Autopilot status
+    automodeenabled = Column(Integer, comment='Autopilot mode status')
+    switchwaypointmodeenabled = Column(Integer, comment='Waypoint switching mode')
+    nextautopilottack = Column(Integer, comment='Next autopilot tack')
+    currenttack = Column(Integer, comment='Current tack')
     
-    # System status
-    cpu_temperature = Column(Numeric(5, 2), comment='CPU temperature in degrees Celsius.')
-    leak_detected = Column(Boolean, comment='Whether a leak is detected in the hull.')
+    # Additional parameters
+    t1 = Column(Integer, comment='T1 parameter')
+    t2 = Column(Text, comment='T2 parameter')
+    t3 = Column(Text, comment='T3 parameter')
+    wpreached = Column(Integer, comment='Waypoint reached status')
+    withintrackradius = Column(Integer, comment='Within track radius status')
+    
+    # Sail and rudder positions
+    sailatportbow = Column(Integer, comment='Sail at port bow position')
+    sailatport = Column(Integer, comment='Sail at port position')
+    sailincentre = Column(Integer, comment='Sail in center position')
+    sailatstarboard = Column(Integer, comment='Sail at starboard position')
+    sailatstarboardbow = Column(Integer, comment='Sail at starboard bow position')
+    
+    # Navigation parameters
+    wpdir = Column(Integer, comment='Waypoint direction')
+    rang = Column(Integer, comment='Range')
+    rcnt = Column(Integer, comment='Rudder count')
+    cang = Column(Integer, comment='Course angle')
+    tk_age = Column(Integer, comment='Track age')
+    
+    # Raw data
+    raw_email_body = Column(Text, comment='Complete raw email body')
+    
+    # Spatial data (computed column)
+    geom = Column(
+        Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'),
+        Computed('st_setsrid(st_makepoint((long)::double precision, (lat)::double precision), 4326)',
+                persisted=True),
+        comment='Spatial point geometry (x, y) - (Longitude, Latitude)'
+    )
     
     # Relationships
-    buoy = relationship("SailbuoyBuoy", foreign_keys=[buoy_id], back_populates="autopilot_data")
+    sailbuoy = relationship("SailbuoyMetadata", back_populates="autopilot_data")
 
 
 class DataloggerData(Base):
@@ -77,36 +119,70 @@ class DataloggerData(Base):
     __table_args__ = {'schema': 'sailbuoy', 'comment': 'Scientific sensor data from sailbuoy datalogger.'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('sailbuoy.datalogger_data_id_seq'::regclass)"))
-    buoy_id = Column(ForeignKey('sailbuoy.buoys.buoy_id', onupdate='CASCADE'), nullable=False, comment='ID of the sailbuoy.')
-    date_time = Column(DateTime, nullable=False, index=True, comment='Timestamp of the data record in UTC.')
+    email_subject = Column(Text, comment='Original email subject line')
+    email_datetime = Column(DateTime(timezone=True), server_default=text('now()'), comment='When the email was received')
+    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
     
-    # Location data (may be interpolated from autopilot)
-    latitude = Column(Numeric(10, 6), comment='Latitude in decimal degrees (WGS84).')
-    longitude = Column(Numeric(10, 6), comment='Longitude in decimal degrees (WGS84).')
-    geom = Column(Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), 
-                 Computed('st_setsrid(st_makepoint((longitude)::double precision, (latitude)::double precision), 4326)', 
-                         persisted=True), 
-                 comment='Spatial point geometry (x, y) - (Longitude, Latitude)')
+    # Location and basic telemetry
+    lat = Column(Float, comment='Latitude in decimal degrees')
+    long = Column(Float, comment='Longitude in decimal degrees')
+    ttff = Column(Integer, comment='Time to first fix in seconds')
+    count = Column(Integer, comment='Message counter')
+    commands = Column(Integer, comment='Command counter')
+    txtries = Column(Integer, comment='Transmission tries')
+    ont = Column(Integer, comment='Ontime counter')
+    diskused = Column(Integer, comment='Disk space used')
     
-    # Water properties
-    water_temperature = Column(Numeric(5, 2), comment='Water temperature in degrees Celsius.')
-    salinity = Column(Numeric(5, 2), comment='Salinity in PSU (Practical Salinity Units).')
-    conductivity = Column(Numeric(8, 2), comment='Conductivity in mS/cm.')
-    pressure = Column(Numeric(8, 2), comment='Water pressure in dbar.')
+    # Power and environment
+    i = Column(Float, comment='Current in Amperes')
+    v = Column(Float, comment='Voltage in Volts')
+    temperature = Column(Float, comment='Internal temperature in °C')
     
-    # Optical measurements
-    chlorophyll = Column(Numeric(8, 4), comment='Chlorophyll concentration in µg/L.')
-    cdom = Column(Numeric(8, 4), comment='Colored Dissolved Organic Matter in ppb.')
-    turbidity = Column(Numeric(8, 4), comment='Turbidity in NTU.')
+    # CTD (Conductivity, Temperature, Depth) data
+    cttemp = Column(Float, comment='CTD temperature in °C')
+    ctcond = Column(Float, comment='CTD conductivity')
     
-    # Meteorological data (may be redundant with autopilot but more precise)
-    air_temperature = Column(Numeric(5, 2), comment='Air temperature in degrees Celsius.')
-    air_pressure = Column(Numeric(7, 2), comment='Atmospheric pressure in hPa.')
-    relative_humidity = Column(Numeric(5, 2), comment='Relative humidity in %.')
+    # Environmental sensors
+    refined_fuel = Column(Float, comment='Refined fuel measurement')
+    crudeoil = Column(Float, comment='Crude oil measurement')
+    turbidity = Column(Float, comment='Turbidity measurement')
     
-    # System data
-    battery_voltage = Column(Numeric(5, 2), comment='Battery voltage in Volts.')
-    internal_temperature = Column(Numeric(5, 2), comment='Internal temperature in degrees Celsius.')
+    # Additional sensors
+    c3_temperature = Column(Float, comment='C3 temperature sensor')
+    mose_onmin = Column(Float, comment='MOSE on minutes')
+    
+    # Wave data
+    hs = Column(Float, comment='Significant wave height')
+    ts = Column(Float, comment='Significant wave period')
+    t0 = Column(Float, comment='Mean wave period')
+    hmax = Column(Float, comment='Maximum wave height')
+    
+    # Error information
+    err = Column(Text, comment='Error messages')
+    
+    # Weather data
+    ft_winddir = Column(Float, comment='Wind direction from Fastrak sensor')
+    ft_windspeed = Column(Float, comment='Wind speed from Fastrak sensor')
+    ft_windgust = Column(Float, comment='Wind gust from Fastrak sensor')
+    
+    # Nortek current profiler data
+    nortekstatus = Column(Integer, comment='Nortek status code')
+    nortekvalidcells = Column(Integer, comment='Number of valid cells')
+    nortekcells = Column(Integer, comment='Total number of cells')
+    nortekonsec = Column(Integer, comment='Nortek on seconds')
+    nortekspeed = Column(Float, comment='Current speed from Nortek')
+    nortekdirection = Column(Float, comment='Current direction from Nortek')
+    
+    # Raw data
+    raw_email_body = Column(Text, comment='Complete raw email body')
+    
+    # Spatial data (computed column)
+    geom = Column(
+        Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'),
+        Computed('st_setsrid(st_makepoint((long)::double precision, (lat)::double precision), 4326)',
+                persisted=True),
+        comment='Spatial point geometry (x, y) - (Longitude, Latitude)'
+    )
     
     # Relationships
-    buoy = relationship("SailbuoyBuoy", foreign_keys=[buoy_id], back_populates="datalogger_data")
+    sailbuoy = relationship("SailbuoyMetadata", back_populates="datalogger_data")
