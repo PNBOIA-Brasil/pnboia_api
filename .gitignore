@@ -7,3 +7,6 @@ raw_data/
 **/__pycache__/
 .env
 build/
+
+/pnboia_api_env
+pnboia_api/schemas/qualified_data original.py
