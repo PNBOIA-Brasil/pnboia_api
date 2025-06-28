@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Text, text, Boolean, Float
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Text, text, Boolean, Float, Computed
 from geoalchemy2.types import Geometry
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -15,7 +15,7 @@ class SailbuoyMetadata(Base):
     __table_args__ = {'schema': 'sailbuoy', 'comment': 'Table containing sailbuoy metadata information.'}
 
     sailbuoy_id = Column(String(10), primary_key=True, comment='Sailbuoy identification ID (e.g., SB2432).')
-    name = Column(String(30), primary_key=True, comment='Component name (e.g., SB2432A for Autopilot, SB2432D for Datalogger).')
+    name = Column(String(30), nullable=False, comment='Component name (e.g., SB2432A for Autopilot, SB2432D for Datalogger).')
     imei = Column(String(15), nullable=False, comment='IMEI number of the sailbuoy component.')
     model = Column(String(30), comment='Model of the sailbuoy component.')
     deploy_date = Column(DateTime, comment='Date when the sailbuoy was deployed.')
@@ -26,8 +26,16 @@ class SailbuoyMetadata(Base):
                         comment='When this record was last updated.')
 
     # Relationships
-    autopilot_data = relationship("AutopilotData", back_populates="sailbuoy")
-    datalogger_data = relationship("DataloggerData", back_populates="sailbuoy")
+    autopilot_data = relationship(
+        "AutopilotData",
+        back_populates="sailbuoy",
+        foreign_keys="[AutopilotData.sailbuoy_id]"
+    )
+    datalogger_data = relationship(
+        "DataloggerData",
+        back_populates="sailbuoy",
+        foreign_keys="[DataloggerData.sailbuoy_id]"
+    )
 
 
 class AutopilotData(Base):
@@ -99,16 +107,15 @@ class AutopilotData(Base):
     # Raw data
     raw_email_body = Column(Text, comment='Complete raw email body')
     
-    # Spatial data (computed column)
-    geom = Column(
-        Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'),
-        Computed('st_setsrid(st_makepoint((long)::double precision, (lat)::double precision), 4326)',
-                persisted=True),
-        comment='Spatial point geometry (x, y) - (Longitude, Latitude)'
-    )
+    # Foreign key to metadata
+    sailbuoy_id = Column(String(10), ForeignKey('sailbuoy.metadata.sailbuoy_id'), nullable=False, comment='Reference to sailbuoy metadata')
     
-    # Relationships
-    sailbuoy = relationship("SailbuoyMetadata", back_populates="autopilot_data")
+    # Relationship to metadata
+    sailbuoy = relationship(
+        "SailbuoyMetadata",
+        back_populates="autopilot_data",
+        foreign_keys=[sailbuoy_id]
+    )
 
 
 class DataloggerData(Base):
@@ -176,13 +183,12 @@ class DataloggerData(Base):
     # Raw data
     raw_email_body = Column(Text, comment='Complete raw email body')
     
-    # Spatial data (computed column)
-    geom = Column(
-        Geometry('POINT', 4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'),
-        Computed('st_setsrid(st_makepoint((long)::double precision, (lat)::double precision), 4326)',
-                persisted=True),
-        comment='Spatial point geometry (x, y) - (Longitude, Latitude)'
-    )
+    # Foreign key to metadata
+    sailbuoy_id = Column(String(10), ForeignKey('sailbuoy.metadata.sailbuoy_id'), nullable=False, comment='Reference to sailbuoy metadata')
     
-    # Relationships
-    sailbuoy = relationship("SailbuoyMetadata", back_populates="datalogger_data")
+    # Relationship to metadata
+    sailbuoy = relationship(
+        "SailbuoyMetadata",
+        back_populates="datalogger_data",
+        foreign_keys=[sailbuoy_id]
+    )

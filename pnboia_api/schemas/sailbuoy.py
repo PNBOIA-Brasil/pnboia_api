@@ -158,13 +158,24 @@ class SailbuoyMetadataResponse(SailbuoyMetadataInDB):
     """Response model for sailbuoy metadata."""
     pass
 
-class AutopilotDataResponse(AutopilotDataInDB):
+# New response models that match our database schema
+class AutopilotDataResponse(AutopilotDataBase):
     """Response model for autopilot data."""
-    pass
+    id: int
+    sailbuoy_id: str
+    email_datetime: Optional[datetime] = None
+    
+    class Config(SailbuoyBase.Config):
+        pass
 
-class DataloggerDataResponse(DataloggerDataInDB):
+class DataloggerDataResponse(DataloggerDataBase):
     """Response model for datalogger data."""
-    pass
+    id: int
+    sailbuoy_id: str
+    email_datetime: Optional[datetime] = None
+    
+    class Config(SailbuoyBase.Config):
+        pass
 
 class PaginatedResponse(BaseModel):
     """Generic paginated response model."""

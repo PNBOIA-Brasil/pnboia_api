@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, text
@@ -76,12 +77,16 @@ class CRUDAutopilotData(CRUDBase[AutopilotData]):
         db: Session, 
         *, 
         sailbuoy_id: str, 
-        start_time: str, 
-        end_time: str,
+        start_time: datetime, 
+        end_time: datetime,
         limit: int = 1000
     ) -> List[AutopilotData]:
         """Get autopilot data for a sailbuoy within a time range"""
-        return (
+        # Log the input parameters for debugging
+        print(f"Querying autopilot data for {sailbuoy_id} between {start_time} and {end_time}")
+        
+        # Execute the query
+        result = (
             db.query(self.model)
             .filter(
                 (self.model.sailbuoy_id == sailbuoy_id) &
@@ -92,6 +97,10 @@ class CRUDAutopilotData(CRUDBase[AutopilotData]):
             .limit(limit)
             .all()
         )
+        
+        # Log the number of results
+        print(f"Found {len(result)} records")
+        return result
     
     def create(self, db: Session, *, obj_in: AutopilotDataCreate) -> AutopilotData:
         """Create a new autopilot data entry"""
@@ -142,12 +151,16 @@ class CRUDDataloggerData(CRUDBase[DataloggerData]):
         db: Session, 
         *, 
         sailbuoy_id: str, 
-        start_time: str, 
-        end_time: str,
+        start_time: datetime, 
+        end_time: datetime,
         limit: int = 1000
     ) -> List[DataloggerData]:
         """Get datalogger data for a sailbuoy within a time range"""
-        return (
+        # Log the input parameters for debugging
+        print(f"Querying datalogger data for {sailbuoy_id} between {start_time} and {end_time}")
+        
+        # Execute the query
+        result = (
             db.query(self.model)
             .filter(
                 (self.model.sailbuoy_id == sailbuoy_id) &
@@ -158,6 +171,10 @@ class CRUDDataloggerData(CRUDBase[DataloggerData]):
             .limit(limit)
             .all()
         )
+        
+        # Log the number of results
+        print(f"Found {len(result)} records")
+        return result
     
     def create(self, db: Session, *, obj_in: DataloggerDataCreate) -> DataloggerData:
         """Create a new datalogger data entry"""
