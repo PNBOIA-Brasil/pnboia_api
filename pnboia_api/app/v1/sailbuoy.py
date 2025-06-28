@@ -12,6 +12,7 @@ from pnboia_api.schemas.sailbuoy import (
     PaginatedResponse
 )
 from pnboia_api import crud
+from pnboia_api.crud.crud_sailbuoy import autopilot_data_synoptic, datalogger_data_synoptic
 
 # Security
 security = HTTPBearer()
@@ -218,3 +219,74 @@ def get_latest_datalogger_data(
     Get the latest datalogger data for a specific sailbuoy.
     """
     return crud.datalogger_data.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+
+
+#######################
+# SYNOPTIC DATA ENDPOINTS (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+#######################
+
+@router.get("/autopilot/synoptic", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
+def list_autopilot_synoptic_data(
+    db: Session = Depends(get_db),
+    sailbuoy_id: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    limit: int = 100,
+):
+    """
+    Retrieve synoptic autopilot data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+    """
+    query = db.query(autopilot_data_synoptic.model)
+    
+    if sailbuoy_id:
+        query = query.filter(autopilot_data_synoptic.model.sailbuoy_id == sailbuoy_id)
+    if start_date:
+        query = query.filter(autopilot_data_synoptic.model.sailbuoy_time >= start_date)
+    if end_date:
+        query = query.filter(autopilot_data_synoptic.model.sailbuoy_time <= end_date)
+    
+    return query.order_by(autopilot_data_synoptic.model.sailbuoy_time.desc()).limit(limit).all()
+
+@router.get("/datalogger/synoptic", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
+def list_datalogger_synoptic_data(
+    db: Session = Depends(get_db),
+    sailbuoy_id: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    limit: int = 100,
+):
+    """
+    Retrieve synoptic datalogger data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+    """
+    query = db.query(datalogger_data_synoptic.model)
+    
+    if sailbuoy_id:
+        query = query.filter(datalogger_data_synoptic.model.sailbuoy_id == sailbuoy_id)
+    if start_date:
+        query = query.filter(datalogger_data_synoptic.model.sailbuoy_time >= start_date)
+    if end_date:
+        query = query.filter(datalogger_data_synoptic.model.sailbuoy_time <= end_date)
+    
+    return query.order_by(datalogger_data_synoptic.model.sailbuoy_time.desc()).limit(limit).all()
+
+@router.get("/autopilot/synoptic/latest/{sailbuoy_id}", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
+def get_latest_autopilot_synoptic_data(
+    sailbuoy_id: str,
+    limit: int = Query(1, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the latest synoptic autopilot data for a specific sailbuoy.
+    """
+    return autopilot_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
+
+@router.get("/datalogger/synoptic/latest/{sailbuoy_id}", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
+def get_latest_datalogger_synoptic_data(
+    sailbuoy_id: str,
+    limit: int = Query(1, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the latest synoptic datalogger data for a specific sailbuoy.
+    """
+    return datalogger_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)

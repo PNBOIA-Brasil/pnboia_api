@@ -5,7 +5,10 @@ from sqlalchemy import func, desc, text
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pnboia_api.crud.base import CRUDBase
-from pnboia_api.models.sailbuoy import SailbuoyMetadata, AutopilotData, DataloggerData
+from pnboia_api.models.sailbuoy import (
+    SailbuoyMetadata, AutopilotData, DataloggerData,
+    AutopilotDataSynoptic, DataloggerDataSynoptic
+)
 from pnboia_api.schemas.sailbuoy import (
     SailbuoyMetadataCreate, SailbuoyMetadataUpdate,
     AutopilotDataCreate, AutopilotDataUpdate,
@@ -210,3 +213,16 @@ class CRUDDataloggerData(CRUDBase[DataloggerData]):
 sailbuoy_metadata = CRUDSailbuoyMetadata(SailbuoyMetadata)
 autopilot_data = CRUDAutopilotData(AutopilotData)
 datalogger_data = CRUDDataloggerData(DataloggerData)
+
+# Synoptic data CRUD operations
+class CRUDAutopilotDataSynoptic(CRUDAutopilotData):
+    """CRUD operations for autopilot synoptic data"""
+    pass
+
+class CRUDDataloggerDataSynoptic(CRUDDataloggerData):
+    """CRUD operations for datalogger synoptic data"""
+    pass
+
+# Initialize the CRUD instances for synoptic data
+autopilot_data_synoptic = CRUDAutopilotDataSynoptic(AutopilotDataSynoptic)
+datalogger_data_synoptic = CRUDDataloggerDataSynoptic(DataloggerDataSynoptic)

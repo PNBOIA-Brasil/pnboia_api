@@ -192,3 +192,15 @@ class DataloggerData(Base):
         back_populates="datalogger_data",
         foreign_keys=[sailbuoy_id]
     )
+
+
+class AutopilotDataSynoptic(AutopilotData):
+    """Model for autopilot synoptic data view (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)"""
+    __tablename__ = 'autopilot_data_synoptic'
+    __table_args__ = {'schema': 'sailbuoy'}
+
+
+class DataloggerDataSynoptic(DataloggerData):
+    """Model for datalogger synoptic data view (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)"""
+    __tablename__ = 'datalogger_data_synoptic'
+    __table_args__ = {'schema': 'sailbuoy'}
