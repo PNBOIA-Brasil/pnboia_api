@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from pnboia_api.app.v1 import auth, info, moored, drift, qualified_data, quality_control
+from pnboia_api.app.v1 import auth, info, moored, drift, qualified_data, quality_control, sailbuoy
 
 
 app = FastAPI(title="PNBOIA API", openapi_url="/openapi.json")
@@ -33,6 +33,7 @@ app.include_router(drift.router, prefix="/v1/drift", tags=["drift"])
 app.include_router(qualified_data.router, prefix="/v1/qualified_data", tags=["qualified_data"])
 app.include_router(info.router, prefix="/v1/info", tags=["info"])
 app.include_router(quality_control.router, prefix="/v1/quality_control", tags=["quality_control"])
+app.include_router(sailbuoy.router, prefix="/v1/sailbuoy", tags=["sailbuoy"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 #######################
