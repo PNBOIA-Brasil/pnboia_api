@@ -18,6 +18,8 @@ from pnboia_api.schemas.sailbuoy import (
     DataloggerDataCreate,
     AutopilotDataUpdate,
     DataloggerDataUpdate,
+    AutopilotDataSynopticResponse,
+    DataloggerDataSynopticResponse,
     PaginatedResponse
 )
 from pnboia_api.crud.crud_sailbuoy import (
@@ -259,7 +261,7 @@ def get_latest_datalogger_data(
 # SYNOPTIC DATA ENDPOINTS (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
 #######################
 
-@router.get("/autopilot/synoptic", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
+@router.get("/autopilot/synoptic", response_model=List[AutopilotDataSynopticResponse], dependencies=[Depends(verify_token)])
 def list_autopilot_synoptic_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
@@ -269,6 +271,9 @@ def list_autopilot_synoptic_data(
 ):
     """
     Retrieve synoptic autopilot data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+    
+    This endpoint returns the same fields as the regular autopilot data endpoint, but only includes
+    data points at synoptic hours (every 3 hours).
     """
     query = db.query(AutopilotDataSynoptic)
     
@@ -280,19 +285,19 @@ def list_autopilot_synoptic_data(
         query = query.filter(AutopilotDataSynoptic.sailbuoy_time <= end_date)
     
     results = query.order_by(desc(AutopilotDataSynoptic.sailbuoy_time)).limit(limit).all()
-    # Convert to response model
+    
+    # Convert to response model - include all fields that exist in the response model
     return [
-        AutopilotDataResponse(
+        AutopilotDataSynopticResponse(
             **{
-                k: getattr(row, k)
-                for k in AutopilotDataResponse.__annotations__.keys()
-                if hasattr(row, k)
+                k: getattr(row, k, None)  # Use None as default if attribute doesn't exist
+                for k in AutopilotDataSynopticResponse.__annotations__.keys()
             }
         )
         for row in results
     ]
 
-@router.get("/datalogger/synoptic", response_model=List[DataloggerDataResponse], dependencies=[Depends(verify_token)])
+@router.get("/datalogger/synoptic", response_model=List[DataloggerDataSynopticResponse], dependencies=[Depends(verify_token)])
 def list_datalogger_synoptic_data(
     db: Session = Depends(get_db),
     sailbuoy_id: Optional[str] = None,
@@ -302,6 +307,9 @@ def list_datalogger_synoptic_data(
 ):
     """
     Retrieve synoptic datalogger data (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+    
+    This endpoint returns the same fields as the regular datalogger data endpoint, but only includes
+    data points at synoptic hours (every 3 hours).
     """
     query = db.query(DataloggerDataSynoptic)
     
@@ -313,19 +321,19 @@ def list_datalogger_synoptic_data(
         query = query.filter(DataloggerDataSynoptic.sailbuoy_time <= end_date)
     
     results = query.order_by(desc(DataloggerDataSynoptic.sailbuoy_time)).limit(limit).all()
-    # Convert to response model
+    
+    # Convert to response model - include all fields that exist in the response model
     return [
-        DataloggerDataResponse(
+        DataloggerDataSynopticResponse(
             **{
-                k: getattr(row, k)
-                for k in DataloggerDataResponse.__annotations__.keys()
-                if hasattr(row, k)
+                k: getattr(row, k, None)  # Use None as default if attribute doesn't exist
+                for k in DataloggerDataSynopticResponse.__annotations__.keys()
             }
         )
         for row in results
     ]
 
-@router.get("/autopilot/synoptic/latest", response_model=List[AutopilotDataResponse], dependencies=[Depends(verify_token)])
+@router.get("/autopilot/synoptic/latest", response_model=List[AutopilotDataSynopticResponse], dependencies=[Depends(verify_token)])
 def get_latest_autopilot_synoptic_data(
     sailbuoy_id: str,
     limit: int = Query(1, ge=1, le=1000),
@@ -333,15 +341,18 @@ def get_latest_autopilot_synoptic_data(
 ):
     """
     Get the latest synoptic autopilot data for a specific sailbuoy.
+    
+    Returns the most recent synoptic data points (every 3 hours) with all fields
+    matching the regular autopilot data endpoint.
     """
     results = autopilot_data_synoptic.get_latest(db, sailbuoy_id=sailbuoy_id, limit=limit)
-    # Convert to response model
+    
+    # Convert to response model - include all fields that exist in the response model
     return [
-        AutopilotDataResponse(
+        AutopilotDataSynopticResponse(
             **{
-                k: getattr(row, k)
-                for k in AutopilotDataResponse.__annotations__.keys()
-                if hasattr(row, k)
+                k: getattr(row, k, None)  # Use None as default if attribute doesn't exist
+                for k in AutopilotDataSynopticResponse.__annotations__.keys()
             }
         )
         for row in (results if results else [])

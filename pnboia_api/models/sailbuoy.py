@@ -201,17 +201,55 @@ class AutopilotDataSynoptic(Base):
         {'schema': 'sailbuoy', 'info': {'is_view': True}}
     )
     
-    # Explicitly define the columns that exist in the view
+    # All columns from autopilot_data
     id = Column(Integer, primary_key=True)
     email_subject = Column(Text, comment='Original email subject line')
     email_datetime = Column(DateTime(timezone=True), comment='When the email was received')
-    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
+    sailbuoy_time = Column(DateTime(timezone=True), comment='Timestamp from the sailbuoy')
     lat = Column(Float, comment='Latitude in decimal degrees')
     long = Column(Float, comment='Longitude in decimal degrees')
-    # Add all other columns that exist in the view...
+    ttff = Column(Integer, comment='Time to first fix in seconds')
+    warning = Column(Integer, comment='Warning status')
+    count = Column(Integer, comment='Message counter')
+    leak = Column(Integer, comment='Leak detection status')
+    bigleak = Column(Integer, comment='Big leak detection status')
+    commands = Column(Integer, comment='Commands status')
+    i = Column(Float, comment='Current in amps')
+    v = Column(Float, comment='Voltage')
+    temperature = Column(Float, comment='Temperature in Celsius')
+    pressure = Column(Float, comment='Atmospheric pressure')
+    humidity = Column(Float, comment='Humidity percentage')
+    transmissiontries = Column(Integer, comment='Number of transmission attempts')
+    ontimesec = Column(Integer, comment='Time on in seconds')
+    velocity = Column(Float, comment='Velocity in m/s')
+    heading = Column(Integer, comment='Heading in degrees')
+    trackdistance = Column(Integer, comment='Track distance in meters')
+    waypointdirection = Column(Integer, comment='Waypoint direction in degrees')
+    trackradius = Column(Integer, comment='Track radius in meters')
+    winddirection = Column(Integer, comment='Wind direction in degrees')
+    automodeenabled = Column(Integer, comment='Auto mode enabled status')
+    switchwaypointmodeenabled = Column(Integer, comment='Switch waypoint mode status')
+    nextautopilottack = Column(Integer, comment='Next autopilot tack')
+    currenttack = Column(Integer, comment='Current tack')
+    t1 = Column(Integer, comment='T1 status')
+    t2 = Column(Text, comment='T2 status')
+    t3 = Column(Text, comment='T3 status')
+    wpreached = Column(Integer, comment='Waypoint reached status')
+    withintrackradius = Column(Integer, comment='Within track radius status')
+    sailatportbow = Column(Integer, comment='Sail at port bow status')
+    sailatport = Column(Integer, comment='Sail at port status')
+    sailincentre = Column(Integer, comment='Sail in center status')
+    sailatstarboard = Column(Integer, comment='Sail at starboard status')
+    sailatstarboardbow = Column(Integer, comment='Sail at starboard bow status')
+    wpdir = Column(Integer, comment='Waypoint direction')
+    rang = Column(Integer, comment='Range')
+    rcnt = Column(Integer, comment='Rudder count')
+    cang = Column(Integer, comment='Course angle')
+    tk_age = Column(Integer, comment='Track age')
+    raw_email_body = Column(Text, comment='Complete raw email body')
     sailbuoy_id = Column(String(10), comment='Reference to sailbuoy metadata')
     
-    # Add relationship to metadata
+    # Relationship to metadata
     sailbuoy = relationship(
         "SailbuoyMetadata",
         primaryjoin="AutopilotDataSynoptic.sailbuoy_id == SailbuoyMetadata.sailbuoy_id",
@@ -231,17 +269,47 @@ class DataloggerDataSynoptic(Base):
         {'schema': 'sailbuoy', 'info': {'is_view': True}}
     )
     
-    # Explicitly define the columns that exist in the view
+    # All columns from datalogger_data
     id = Column(Integer, primary_key=True)
     email_subject = Column(Text, comment='Original email subject line')
     email_datetime = Column(DateTime(timezone=True), comment='When the email was received')
-    sailbuoy_time = Column(DateTime, nullable=False, index=True, comment='Timestamp from the sailbuoy')
+    sailbuoy_time = Column(DateTime(timezone=True), comment='Timestamp from the sailbuoy')
     lat = Column(Float, comment='Latitude in decimal degrees')
     long = Column(Float, comment='Longitude in decimal degrees')
-    # Add all other columns that exist in the view...
+    ttff = Column(Integer, comment='Time to first fix in seconds')
+    count = Column(Integer, comment='Message counter')
+    commands = Column(Integer, comment='Commands status')
+    txtries = Column(Integer, comment='Transmission tries')
+    ont = Column(Integer, comment='On time')
+    diskused = Column(Integer, comment='Disk space used')
+    i = Column(Float, comment='Current in amps')
+    v = Column(Float, comment='Voltage')
+    temperature = Column(Float, comment='Temperature in Celsius')
+    cttemp = Column(Float, comment='CTD temperature')
+    ctcond = Column(Float, comment='CTD conductivity')
+    refined_fuel = Column(Float, comment='Refined fuel measurement')
+    crudeoil = Column(Float, comment='Crude oil measurement')
+    turbidity = Column(Float, comment='Turbidity measurement')
+    c3_temperature = Column(Float, comment='C3 temperature')
+    mose_onmin = Column(Float, comment='MOSE on minutes')
+    hs = Column(Float, comment='Significant wave height')
+    ts = Column(Float, comment='Significant wave period')
+    t0 = Column(Float, comment='Wave period')
+    hmax = Column(Float, comment='Maximum wave height')
+    err = Column(Text, comment='Error messages')
+    ft_winddir = Column(Float, comment='Fastrak wind direction')
+    ft_windspeed = Column(Float, comment='Fastrak wind speed')
+    ft_windgust = Column(Float, comment='Fastrak wind gust')
+    nortekstatus = Column(Integer, comment='Nortek status')
+    nortekvalidcells = Column(Integer, comment='Nortek valid cells')
+    nortekcells = Column(Integer, comment='Nortek total cells')
+    nortekonsec = Column(Integer, comment='Nortek on seconds')
+    nortekspeed = Column(Float, comment='Nortek speed')
+    nortekdirection = Column(Float, comment='Nortek direction')
+    raw_email_body = Column(Text, comment='Complete raw email body')
     sailbuoy_id = Column(String(10), comment='Reference to sailbuoy metadata')
     
-    # Add relationship to metadata
+    # Relationship to metadata
     sailbuoy = relationship(
         "SailbuoyMetadata",
         primaryjoin="DataloggerDataSynoptic.sailbuoy_id == SailbuoyMetadata.sailbuoy_id",
